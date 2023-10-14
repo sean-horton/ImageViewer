@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.onebytellc.imageviewer.ui.MainController">
+
+    <top>
+
+    </top>
+
+    <center>
+        <fx:include source="image-grid/image-grid.fxml"/>
+    </center>
+
+    <bottom>
+
+    </bottom>
+
+    <right>
+
+    </right>
+
+    <left>
+
+    </left>
+
+</BorderPane>
