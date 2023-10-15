@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           style="-fx-background-color: black"
+           fx:id="stackPane"
+           fx:controller="com.onebytellc.imageviewer.ui.display.ImageViewController">
+
+    <ImageView fx:id="imageView" preserveRatio="true">
+    </ImageView>
+
+    <Label pickOnBounds="false" fx:id="label"></Label>
+
+</StackPane>

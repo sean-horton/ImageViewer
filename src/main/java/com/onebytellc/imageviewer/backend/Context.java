@@ -8,10 +8,15 @@ public final class Context {
 
     private static Context INSTANCE;
 
-    private Context() {
+    private final DisplayState displayState;
 
+    private Context() {
+        this.displayState = new DisplayState();
     }
 
+
+    //////////////////////
+    // static
     public static synchronized void initialize() {
         if (INSTANCE == null) {
             LOG.info("Context initialized");
@@ -28,4 +33,10 @@ public final class Context {
         return INSTANCE;
     }
 
+
+    //////////////////////
+    // public
+    public DisplayState getDisplayState() {
+        return displayState;
+    }
 }

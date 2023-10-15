@@ -4,6 +4,6 @@
 <GridView xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml"
           fx:id="gridView"
-          fx:controller="com.onebytellc.imageviewer.ui.imagegrid.ImageGridController">
+          fx:controller="com.onebytellc.imageviewer.ui.display.grid.ImageGridController">
 
 </GridView>

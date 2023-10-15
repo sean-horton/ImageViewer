@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.SplitPane?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.onebytellc.imageviewer.ui.MainController">
 
@@ -9,7 +12,10 @@
     </top>
 
     <center>
-        <fx:include source="image-grid/image-grid.fxml"/>
+        <SplitPane>
+            <HBox VBox.vgrow="NEVER" prefHeight="200"></HBox>
+            <fx:include VBox.vgrow="ALWAYS" source="display/display-view.fxml"/>
+        </SplitPane>
     </center>
 
     <bottom>
