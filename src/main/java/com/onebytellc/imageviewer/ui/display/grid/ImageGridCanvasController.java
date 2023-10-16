@@ -1,7 +1,11 @@
 package com.onebytellc.imageviewer.ui.display.grid;
 
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
@@ -10,6 +14,9 @@ import javafx.scene.shape.ArcType;
 import javafx.scene.text.Font;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is the image grid that can display 1,000's of images at
@@ -32,21 +39,22 @@ public class ImageGridCanvasController {
 
     // state
     private double scaleFactor = 1;
-
-
-    // TODO - remove these
-    static Image testImage;
-    static int imageCount = 15000;
-
+    private List<DisplayBounds> bounds = new ArrayList<>();
+    private List<Image> testImages = new ArrayList<>();
 
     @FXML
     private void initialize() {
-        try {
-            testImage = new Image(new FileInputStream("/Users/shorton/IMG_1248.jpeg"),
-                    400, 400, true, true);
-        } catch (Exception e) {
+        new Thread(() -> {
+            for (int i = 0; i < 2000; i++) {
+                try (InputStream in = new FileInputStream("/Users/shorton/imageviewtest/IMG_1248-small.jpeg")) {
+                    testImages.add(new Image(in, 50, 50, true, true));
+                    Platform.runLater(this::redraw);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        }).start();
 
-        }
 
         // resize the canvas to parent anchor
         anchor.setMinWidth(0);
@@ -76,9 +84,21 @@ public class ImageGridCanvasController {
             event.consume();
         });
         canvas.setOnZoomFinished(Event::consume);
+
+        // click listener
+        canvas.setOnMouseClicked(event -> {
+            for (DisplayBounds bound : bounds) {
+                if (bound.bounds.contains(new Point2D(event.getX(), event.getY()))) {
+                    bound.action.run();
+                }
+            }
+            event.consume();
+        });
     }
 
     private void redraw() {
+        bounds.clear();
+
         double w = canvas.getWidth();
         double h = canvas.getHeight();
 
@@ -90,12 +110,12 @@ public class ImageGridCanvasController {
         // TODO - implement rubber banding
         // limit scroll bounds
         int columns = (int) (w / size);
-        double allContentHeight = Math.ceil((imageCount / (double) columns)) * size;
+        double allContentHeight = Math.ceil((testImages.size() / (double) columns)) * size;
 
         int minScroll = (int) (-allContentHeight + h);
         if (allContentHeight <= h) {
             // we have less content than can fill the screen
-            offY = (int) -(h - allContentHeight);
+            offY = 0; //(int) -(h - allContentHeight);
             offset = 0;
         } else {
             if (offY > 0) {
@@ -114,9 +134,11 @@ public class ImageGridCanvasController {
         canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         // draw each image
-        for (int i = 0; i < imageCount; i++) {
+        for (int i = 0; i < testImages.size(); i++) {
 
-            // TODO - need to preserve ratio for size
+            // TODO - need to preserve ratio for
+
+            Image testImage = testImages.get(i);
             testImage.getWidth();
             testImage.getHeight();
 
@@ -125,6 +147,12 @@ public class ImageGridCanvasController {
             if (offX > canvas.getWidth() || offY > canvas.getHeight()) draw = false;
 
             if (draw) {
+                int finalOffX = offX;
+                int finalOffY = offY;
+                bounds.add(new DisplayBounds(new BoundingBox(offX, offY, size, size), () -> {
+                    canvas.getGraphicsContext2D().setFill(Color.RED);
+                    canvas.getGraphicsContext2D().fillRect(finalOffX, finalOffY, size, size);
+                }));
                 canvas.getGraphicsContext2D().drawImage(testImage, offX, offY, size, size);
             }
 
@@ -183,6 +211,18 @@ public class ImageGridCanvasController {
         }
 
         return Math.max(DEFAULT_IMAGE_SIZE * scaleFactor, size);
+    }
+
+    private static class DisplayBounds {
+        private Bounds bounds;
+        private Runnable action;
+
+        public DisplayBounds(Bounds bounds, Runnable action) {
+            this.bounds = bounds;
+            this.action = action;
+        }
+
+
     }
 
 }
