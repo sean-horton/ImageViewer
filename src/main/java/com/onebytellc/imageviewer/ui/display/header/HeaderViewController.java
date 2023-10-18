@@ -1,7 +1,8 @@
 package com.onebytellc.imageviewer.ui.display.header;
 
 import com.onebytellc.imageviewer.backend.Context;
-import com.onebytellc.imageviewer.ui.display.GridSizeParser;
+import com.onebytellc.imageviewer.backend.DisplayState;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 
@@ -13,15 +14,11 @@ public class HeaderViewController {
     @FXML
     private void initialize() {
         Context context = Context.getInstance();
+        DisplayState state = context.getDisplayState();
 
-        scaleSlider.setMajorTickUnit(1);
-        scaleSlider.setMinorTickCount(1);
-        scaleSlider.setSnapToTicks(true);
-        scaleSlider.setMin(0);
-        scaleSlider.setMax(GridSizeParser.horizontalCount.length - 1);
-        scaleSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            context.getDisplayState().cellSizeProperty().set(newValue.doubleValue());
-        });
+        Bindings.bindBidirectional(scaleSlider.valueProperty(), state.gridImageScaleFactorProperty());
+        scaleSlider.minProperty().bind(state.gridMinScaleFactorProperty());
+        scaleSlider.maxProperty().bind(state.gridMaxScaleFactorProperty());
     }
 
 }

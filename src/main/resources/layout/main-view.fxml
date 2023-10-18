@@ -14,7 +14,7 @@
     <center>
         <SplitPane>
             <HBox VBox.vgrow="NEVER" prefHeight="200"></HBox>
-            <fx:include VBox.vgrow="ALWAYS" source="display/display-view.fxml"/>
+            <fx:include VBox.vgrow="ALWAYS" fx:id="displayView" source="display/display-view.fxml"/>
         </SplitPane>
     </center>
 

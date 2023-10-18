@@ -7,8 +7,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import org.controlsfx.control.GridView;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,7 +32,7 @@ public class ImageGridController {
             scaleGrid();
         });
 
-        Context.getInstance().getDisplayState().cellSizeProperty().addListener((observable, oldValue, newValue) -> {
+        Context.getInstance().getDisplayState().gridImageScaleFactorProperty().addListener((observable, oldValue, newValue) -> {
             scaleGrid();
         });
 
@@ -49,7 +47,7 @@ public class ImageGridController {
 
     private void scaleGrid() {
         double count = GridSizeParser.horizontalCount[Context.getInstance()
-                .getDisplayState().cellSizeProperty().intValue()];
+                .getDisplayState().gridImageScaleFactorProperty().intValue()];
 
         double area = gridView.getWidth() * gridView.getHeight();
         if (area == 0) {

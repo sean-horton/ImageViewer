@@ -36,7 +36,8 @@ public class MainApplication extends Application {
 
     @Override
     public void stop() throws Exception {
-        Logger.stopAndWait();
         super.stop();
+        Context.destroy();
+        Logger.stopAndWait();
     }
 }

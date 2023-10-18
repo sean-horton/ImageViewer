@@ -17,4 +17,6 @@ module com.onebytellc.imageviewer {
 
     exports com.onebytellc.imageviewer.ui.display.header;
     opens com.onebytellc.imageviewer.ui.display.header to javafx.fxml;
+    exports com.onebytellc.imageviewer.controls;
+    opens com.onebytellc.imageviewer.controls to javafx.fxml;
 }

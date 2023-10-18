@@ -41,6 +41,13 @@ public class Logger {
 
     /////////////////////
     // PUBLIC
+    public void error(String string, Object... values) {
+        if (LEVEL.ordinal() < LogLevel.ERROR.ordinal()) {
+            return;
+        }
+        LOG_WRITER.offer(new LogItem(name, string, values));
+    }
+
     public void warn(String string, Object... values) {
         if (LEVEL.ordinal() < LogLevel.WARN.ordinal()) {
             return;

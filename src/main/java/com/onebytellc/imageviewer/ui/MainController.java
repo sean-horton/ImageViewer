@@ -2,11 +2,8 @@ package com.onebytellc.imageviewer.ui;
 
 import com.onebytellc.imageviewer.MainApplication;
 import com.onebytellc.imageviewer.ViewNode;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
 
 import java.io.IOException;
 
@@ -22,8 +19,5 @@ public class MainController {
             throw new IllegalStateException("Unable to load MainController", e);
         }
     }
-
-    @FXML
-    private Label welcomeText;
 
 }
