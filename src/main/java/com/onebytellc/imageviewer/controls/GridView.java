@@ -31,6 +31,7 @@ public class GridView<T extends GridItem> extends AnchorPane {
     private final Canvas canvas;
     private ObservableList<T> items = FXCollections.observableArrayList();
     private List<DisplayBounds> bounds = new ArrayList<>();
+    private ScrollBarDetector scrollBarDetector = new ScrollBarDetector();
 
     public GridView() {
         canvas = new Canvas();
@@ -86,6 +87,11 @@ public class GridView<T extends GridItem> extends AnchorPane {
 
         // click listener
         canvas.setOnMouseClicked(event -> {
+            if (scrollBarDetector.onMouseClicked(event)) {
+                event.consume();
+                return;
+            }
+
             for (DisplayBounds bound : bounds) {
                 if (bound.bounds.contains(new Point2D(event.getX(), event.getY()))) {
                     bound.action.run();
@@ -94,6 +100,33 @@ public class GridView<T extends GridItem> extends AnchorPane {
             event.consume();
         });
 
+        canvas.setOnMousePressed(event -> {
+            if (scrollBarDetector.onPressed(event)) {
+                event.consume();
+                return;
+            }
+        });
+
+        canvas.setOnMouseReleased(event -> {
+            if (scrollBarDetector.onMouseReleased(event)) {
+                redraw();
+                event.consume();
+                return;
+            }
+        });
+
+        canvas.setOnMouseDragged(event -> {
+            if (scrollBarDetector.onMouseDragged(event)) {
+                event.consume();
+                return;
+            }
+        });
+
+        // scroll bar listener
+        scrollBarDetector.setOnScroll((start, current, off) -> {
+            offset = allContentHeight() * ((-current.getY() + off) / getHeight());
+            redraw();
+        });
     }
 
 
@@ -121,6 +154,17 @@ public class GridView<T extends GridItem> extends AnchorPane {
 
     ////////////////////
     // Private
+    private double allContentHeight() {
+        double w = canvas.getWidth();
+        double h = canvas.getHeight();
+        double[] size = calcSize(w, h);
+        double sizeW = size[0];
+        double sizeH = size[1];
+        int columns = (int) (w / sizeW);
+        double allContentHeight = Math.ceil((items.size() / (double) columns)) * sizeH;
+        return allContentHeight;
+    }
+
     private void redraw() {
         bounds.clear();
 
@@ -164,14 +208,14 @@ public class GridView<T extends GridItem> extends AnchorPane {
 
         // draw each image
         for (int i = 0; i < items.size(); i++) {
-
-            // TODO - need to preserve ratio for
+            // TODO - if there are millions of items it would be faster to use
+            //  binary search to find first row that needs to be painted
 
             GridItem item = items.get(i);
 
             boolean draw = true;
             if (offX + sizeW < 0 || offY + sizeH < 0) draw = false;
-            if (offX > canvas.getWidth() || offY > canvas.getHeight()) draw = false;
+            if (offX > canvas.getWidth() || offY > canvas.getHeight()) break; // no need to look further
 
             if (draw) {
                 double finalOffX = offX;
@@ -220,6 +264,8 @@ public class GridView<T extends GridItem> extends AnchorPane {
             canvas.getGraphicsContext2D().fillArc(xPos, scrollBarOffset, scrollBarWidth, scrollBarWidth, 0, 180, ArcType.CHORD);
             canvas.getGraphicsContext2D().fillRect(xPos, scrollBarOffset + bubble, scrollBarWidth, scrollBarHeight);
             canvas.getGraphicsContext2D().fillArc(xPos, scrollBarOffset + scrollBarHeight, scrollBarWidth, scrollBarWidth, 180, 180, ArcType.CHORD);
+
+            scrollBarDetector.setBound(new BoundingBox(xPos, scrollBarOffset, scrollBarWidth, scrollBarHeight + scrollBarWidth + scrollBarWidth));
         }
     }
 
