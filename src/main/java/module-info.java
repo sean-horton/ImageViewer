@@ -1,8 +1,10 @@
 module com.onebytellc.imageviewer {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.sql;
     requires org.controlsfx.controls;
-
+    requires org.xerial.sqlitejdbc;
+    requires org.jooq;
 
     opens com.onebytellc.imageviewer to javafx.fxml;
     exports com.onebytellc.imageviewer;

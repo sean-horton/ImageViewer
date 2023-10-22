@@ -1,3 +1,15 @@
+import groovy.xml.MarkupBuilder
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.jooq:jooq-codegen:3.18.7'
+        classpath 'org.xerial:sqlite-jdbc:3.43.2.1'
+    }
+}
+
 plugins {
     id 'java'
     id 'application'
@@ -36,6 +48,8 @@ javafx {
 
 dependencies {
     implementation("org.controlsfx:controlsfx:11.1.2")
+    implementation("org.xerial:sqlite-jdbc:3.43.2.1")
+    implementation("org.jooq:jooq:3.18.7")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
@@ -56,3 +70,57 @@ jlink {
 jlinkZip {
     group = 'distribution'
 }
+
+import org.jooq.codegen.GenerationTool
+import org.jooq.meta.jaxb.*
+
+tasks.register('generateJooqBindings') {
+    doLast {
+        GenerationTool.generate(new Configuration()
+                .withJdbc(new Jdbc()
+                        .withDriver('org.sqlite.JDBC')
+                        .withUrl('jdbc:sqlite:/Users/shorton/imageviewtest/db/imageview.db')
+                        .withUser('')
+                        .withPassword(''))
+                .withGenerator(new Generator()
+                        .withDatabase(new Database())
+                        .withGenerate(new Generate()
+                                .withPojos(true)
+                                .withDaos(true))
+                        .withTarget(new Target()
+                                .withPackageName('com.onebytellc.imageviewer.backend.db.jooq')
+                                .withDirectory(buildDir.absolutePath + '/../src/main/java'))))
+    }
+}
+
+//generationTool {
+//
+//    // Configure the database connection here
+//    jdbc {
+//        driver = 'org.sqlite.JDBC'
+//        url = 'jdbc:sqlite:/Users/shorton/imageviewtest/db/imageview.db'
+//        user = ''
+//        password = ''
+//    }
+//    generator {
+//        database {
+//            name = 'org.jooq.meta.sqlite.SQLiteDatabase'
+//        }
+//
+//        // Generation flags: See advanced configuration properties
+//        generate {}
+//        target {
+//
+//            // The destination package of your generated classes (within the
+//            // destination directory)
+//            //
+//            // jOOQ may append the schema name to this package if generating multiple schemas,
+//            // e.g. org.jooq.your.packagename.schema1
+//            // org.jooq.your.packagename.schema2
+//            packageName = 'com.onebytellc.imageviewer.backed.db'
+//
+//            // The destination directory of your generated classes
+////            directory = '/path/to/your/dir'
+//        }
+//    }
+//}

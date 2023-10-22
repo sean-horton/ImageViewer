@@ -5,14 +5,10 @@ import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.controls.GridView;
 import com.onebytellc.imageviewer.controls.ImageGridItem;
 import com.onebytellc.imageviewer.logger.Logger;
-import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.image.Image;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This is the image grid that can display 1,000's of images at
@@ -36,17 +32,9 @@ public class ImageGridCanvasController {
         gridView.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
         gridView.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
 
-        subscription = Context.getInstance().getDisplayState().observeActiveImages()
-                .observeOn(Executor.fxApplicationThread())
-                .subscribe(images -> {
-                    LOG.info("Updating images: ");
-
-                    List<ImageGridItem> items = new ArrayList<>(images.size());
-                    for (Image image : images) {
-                        items.add(new ImageGridItem(image));
-                    }
-                    gridView.getItems().setAll(items);
-                });
+        state.activeCollectionProperty().addListener((ListChangeListener<ImageGridItem>) c -> {
+            gridView.getItems().setAll(c.getList());
+        });
     }
 
 }

@@ -3,7 +3,7 @@ package com.onebytellc.imageviewer.reactive;
 public class Observable<T> {
 
     private final ObservableSubscribe<T> subscribeListener;
-    private final ObservableDispose disposeListener;
+    private final ObservableDispose<T> disposeListener;
 
     private Executor subscribeOn = Executor.processThread();
     private Executor observeOn = Executor.processThread();
