@@ -5,8 +5,9 @@ package com.onebytellc.imageviewer.backend.db.jooq;
 
 
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Collection;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.CollectionPath;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.Directory;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Image;
-import com.onebytellc.imageviewer.backend.db.jooq.tables.Path;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Schema;
 
 import java.util.Arrays;
@@ -36,14 +37,19 @@ public class DefaultSchema extends SchemaImpl {
     public final Collection COLLECTION = Collection.COLLECTION;
 
     /**
+     * The table <code>collection_path</code>.
+     */
+    public final CollectionPath COLLECTION_PATH = CollectionPath.COLLECTION_PATH;
+
+    /**
+     * The table <code>directory</code>.
+     */
+    public final Directory DIRECTORY = Directory.DIRECTORY;
+
+    /**
      * The table <code>image</code>.
      */
     public final Image IMAGE = Image.IMAGE;
-
-    /**
-     * The table <code>path</code>.
-     */
-    public final Path PATH = Path.PATH;
 
     /**
      * The table <code>schema</code>.
@@ -67,8 +73,9 @@ public class DefaultSchema extends SchemaImpl {
     public final List<Table<?>> getTables() {
         return Arrays.asList(
             Collection.COLLECTION,
+            CollectionPath.COLLECTION_PATH,
+            Directory.DIRECTORY,
             Image.IMAGE,
-            Path.PATH,
             Schema.SCHEMA
         );
     }

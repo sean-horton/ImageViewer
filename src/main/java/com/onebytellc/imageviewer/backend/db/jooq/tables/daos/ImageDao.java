@@ -70,18 +70,33 @@ public class ImageDao extends DAOImpl<ImageRecord, com.onebytellc.imageviewer.ba
     }
 
     /**
-     * Fetch records that have <code>path_id BETWEEN lowerInclusive AND
+     * Fetch records that have <code>directory_id BETWEEN lowerInclusive AND
      * upperInclusive</code>
      */
-    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchRangeOfPathId(Integer lowerInclusive, Integer upperInclusive) {
-        return fetchRange(Image.IMAGE.PATH_ID, lowerInclusive, upperInclusive);
+    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchRangeOfDirectoryId(Integer lowerInclusive, Integer upperInclusive) {
+        return fetchRange(Image.IMAGE.DIRECTORY_ID, lowerInclusive, upperInclusive);
     }
 
     /**
-     * Fetch records that have <code>path_id IN (values)</code>
+     * Fetch records that have <code>directory_id IN (values)</code>
      */
-    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchByPathId(Integer... values) {
-        return fetch(Image.IMAGE.PATH_ID, values);
+    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchByDirectoryId(Integer... values) {
+        return fetch(Image.IMAGE.DIRECTORY_ID, values);
+    }
+
+    /**
+     * Fetch records that have <code>filename BETWEEN lowerInclusive AND
+     * upperInclusive</code>
+     */
+    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchRangeOfFilename(String lowerInclusive, String upperInclusive) {
+        return fetchRange(Image.IMAGE.FILENAME, lowerInclusive, upperInclusive);
+    }
+
+    /**
+     * Fetch records that have <code>filename IN (values)</code>
+     */
+    public List<com.onebytellc.imageviewer.backend.db.jooq.tables.pojos.Image> fetchByFilename(String... values) {
+        return fetch(Image.IMAGE.FILENAME, values);
     }
 
     /**

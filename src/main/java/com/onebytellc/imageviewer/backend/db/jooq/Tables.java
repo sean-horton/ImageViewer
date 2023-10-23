@@ -5,8 +5,9 @@ package com.onebytellc.imageviewer.backend.db.jooq;
 
 
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Collection;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.CollectionPath;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.Directory;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Image;
-import com.onebytellc.imageviewer.backend.db.jooq.tables.Path;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.Schema;
 
 
@@ -22,14 +23,19 @@ public class Tables {
     public static final Collection COLLECTION = Collection.COLLECTION;
 
     /**
+     * The table <code>collection_path</code>.
+     */
+    public static final CollectionPath COLLECTION_PATH = CollectionPath.COLLECTION_PATH;
+
+    /**
+     * The table <code>directory</code>.
+     */
+    public static final Directory DIRECTORY = Directory.DIRECTORY;
+
+    /**
      * The table <code>image</code>.
      */
     public static final Image IMAGE = Image.IMAGE;
-
-    /**
-     * The table <code>path</code>.
-     */
-    public static final Path PATH = Path.PATH;
 
     /**
      * The table <code>schema</code>.

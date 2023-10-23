@@ -97,6 +97,7 @@ public class ImageExplorer implements Runnable {
 
         directory.addPath(root, watchKey);
 
+        List<ImageLoader> initialImages = new ArrayList<>();
         for (Path path : Files.list(root).toList()) {
             if (Files.isDirectory(path)) {
                 recursiveFetch(directory, path, depth - 1);
@@ -105,11 +106,13 @@ public class ImageExplorer implements Runnable {
 
             for (ImageTypeDefinition imageType : imageTypes) {
                 if (imageType.isLoadable(path)) {
-                    directory.streamable.notify(new ImageEvent(imageType.createLoader(path), ImageEventType.ADDED));
+                    initialImages.add(imageType.createLoader(path));
                     break;
                 }
             }
         }
+
+        directory.streamable.notify(new ImageEvent(root, initialImages, ImageEventType.INIT));
     }
 
     ////////////////////////
@@ -157,18 +160,21 @@ public class ImageExplorer implements Runnable {
                     ImageLoader loader = null;
                     for (ImageTypeDefinition type : imageTypes) {
                         if (type.isLoadable(filename)) {
-                            loader = type.createLoader(filename);
+                            loader = type.createLoader(subDirectory.path.resolve(filename));
                             break;
                         }
                     }
 
+                    // TODO - need to chheck if it's a directory and thhen call init if it was added
+                    //  how about a removed directory?
+
                     if (loader != null) {
                         if (kind == ENTRY_CREATE) {
-                            directory.streamable.notify(new ImageEvent(loader, ImageEventType.ADDED));
+                            directory.streamable.notify(new ImageEvent(subDirectory.path, loader, ImageEventType.ADDED));
                         } else if (kind == ENTRY_DELETE) {
-                            directory.streamable.notify(new ImageEvent(loader, ImageEventType.REMOVED));
+                            directory.streamable.notify(new ImageEvent(subDirectory.path, loader, ImageEventType.REMOVED));
                         } else if (kind == ENTRY_MODIFY) {
-                            directory.streamable.notify(new ImageEvent(loader, ImageEventType.UPDATED));
+                            directory.streamable.notify(new ImageEvent(subDirectory.path, loader, ImageEventType.UPDATED));
                         }
                     }
                 }

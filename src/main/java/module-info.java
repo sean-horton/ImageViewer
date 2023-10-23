@@ -5,6 +5,7 @@ module com.onebytellc.imageviewer {
     requires org.controlsfx.controls;
     requires org.xerial.sqlitejdbc;
     requires org.jooq;
+    requires org.apache.commons.imaging;
 
     opens com.onebytellc.imageviewer to javafx.fxml;
     exports com.onebytellc.imageviewer;
@@ -21,4 +22,6 @@ module com.onebytellc.imageviewer {
     opens com.onebytellc.imageviewer.ui.display.header to javafx.fxml;
     exports com.onebytellc.imageviewer.controls;
     opens com.onebytellc.imageviewer.controls to javafx.fxml;
+
+    exports com.onebytellc.imageviewer.backend.db.jooq.tables.records;
 }

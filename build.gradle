@@ -50,6 +50,7 @@ dependencies {
     implementation("org.controlsfx:controlsfx:11.1.2")
     implementation("org.xerial:sqlite-jdbc:3.43.2.1")
     implementation("org.jooq:jooq:3.18.7")
+    implementation("org.apache.commons:commons-imaging:1.0-alpha3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")

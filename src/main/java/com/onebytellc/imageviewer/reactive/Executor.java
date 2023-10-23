@@ -1,20 +1,22 @@
 package com.onebytellc.imageviewer.reactive;
 
+import com.onebytellc.imageviewer.logger.Logger;
 import javafx.application.Platform;
 
+import java.util.PriorityQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public interface Executor {
 
-    ExecutorService thread = Executors.newSingleThreadExecutor(r -> {
-        Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        return thread;
-    });
+    Logger LOG = Logger.getInstance(Executor.class);
 
-    ExecutorService pool = Executors.newScheduledThreadPool(10, r -> {
-        Thread thread = new Thread(r);
+    ExecutorService processThread = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "ProcessThread");
         thread.setDaemon(true);
         return thread;
     });
@@ -32,10 +34,12 @@ public interface Executor {
     }
 
     static Executor processThread() {
-        return thread::submit;
-    }
-
-    static Executor pool() {
-        return pool::submit;
+        return runnable -> {
+            try {
+                processThread.submit(runnable);
+            } catch (Exception e) {
+                LOG.error("Failed to submit processThread runnable: {}", e.getMessage());
+            }
+        };
     }
 }

@@ -14,4 +14,11 @@ public class JpegImageLoader implements ImageLoader {
     public Path getPath() {
         return path;
     }
+
+    @Override
+    public ImageData readFromDisk() {
+//        final ImageMetadata metadata = Imaging.getMetadata(jpegImageFile);
+
+        return null;
+    }
 }

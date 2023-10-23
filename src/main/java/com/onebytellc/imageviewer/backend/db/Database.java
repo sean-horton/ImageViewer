@@ -1,12 +1,11 @@
 package com.onebytellc.imageviewer.backend.db;
 
-import com.onebytellc.imageviewer.backend.db.jooq.tables.records.CollectionRecord;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.records.CollectionPathRecord;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.records.DirectoryRecord;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
-import com.onebytellc.imageviewer.backend.db.jooq.tables.records.PathRecord;
-import com.onebytellc.imageviewer.reactive.Observable;
+import com.onebytellc.imageviewer.backend.image.ImageLoader;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 import java.sql.Connection;
@@ -15,7 +14,9 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Scanner;
 
-import static com.onebytellc.imageviewer.backend.db.jooq.tables.Path.PATH;
+import static com.onebytellc.imageviewer.backend.db.jooq.tables.CollectionPath.COLLECTION_PATH;
+import static com.onebytellc.imageviewer.backend.db.jooq.tables.Directory.DIRECTORY;
+import static com.onebytellc.imageviewer.backend.db.jooq.tables.Image.IMAGE;
 
 public class Database {
 
@@ -50,6 +51,7 @@ public class Database {
         try {
             // format for where the sql db file is saved is
             // "jdbc:sqlite:C:/work/mydatabase.db"
+            // TODO - needs to be passed property
             Class.forName("org.sqlite.JDBC");
             String savePath = "/Users/shorton/imageviewtest/db/";
             conn = DriverManager.getConnection("jdbc:sqlite:" + savePath + "/imageview.db");
@@ -64,6 +66,9 @@ public class Database {
                 ctx.execute(s);
             }
 
+            List<DirectoryRecord> records = ctx.select().from(DIRECTORY).fetch()
+                    .map(r -> r.into(DirectoryRecord.class));
+
             return ctx;
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -73,17 +78,42 @@ public class Database {
         return null;
     }
 
-//    public List<ImageRecord> imageRecords() {
-//
-//    }
-//
-//    public List<CollectionRecord> collectionRecords() {
-//
-//    }
+    public List<CollectionPathRecord> getPathsForCollection(int collectionId) {
+        return context.select().from(COLLECTION_PATH).fetch()
+                .map(r -> r.into(CollectionPathRecord.class));
+    }
 
-    public List<PathRecord> path(int collectionId) {
-        return context.select().from(PATH).fetch()
-                .map(r -> r.into(PathRecord.class));
+    public List<ImageRecord> getImagesInDirectory(DirectoryRecord directoryRecord) {
+        return context.select().from(IMAGE)
+                .where(IMAGE.DIRECTORY_ID.eq(directoryRecord.getId()))
+                .fetch()
+                .map(r -> r.into(ImageRecord.class));
+    }
+
+    public DirectoryRecord getOrAddDirectory(String path) {
+        DirectoryRecord record = new DirectoryRecord();
+        record.setPath(path);
+        context.insertInto(DIRECTORY)
+                .set(record)
+                .onConflict()
+                .where(DIRECTORY.PATH.eq(path))
+                .doNothing()
+                .execute();
+
+        return context.select().from(DIRECTORY)
+                .where(DIRECTORY.PATH.eq(path))
+                .fetchOne()
+                .map(r -> r.into(DirectoryRecord.class));
+    }
+
+    public ImageRecord addImage(DirectoryRecord directory, ImageLoader loader) {
+        ImageRecord record = new ImageRecord();
+        record.setDirectoryId(directory.getId());
+        record.setFilename(loader.getPath().getFileName().toString());
+        return context.insertInto(IMAGE)
+                .set(record)
+                .returning()
+                .fetchOne();
     }
 
 }

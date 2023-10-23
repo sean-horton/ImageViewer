@@ -3,21 +3,13 @@
 --     - path (id, directory)
 --     - image (id, path_id, collection_id, im_create_date, fs_modify_time)
 
-CREATE TABLE IF NOT EXISTS schema
-(
-    version INTEGER
-);
-
-INSERT INTO schema (version)
-VALUES (0);
-
 CREATE TABLE IF NOT EXISTS collection
 (
     id   INTEGER PRIMARY KEY,
     name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS path
+CREATE TABLE IF NOT EXISTS collection_path
 (
     id            INTEGER PRIMARY KEY,
     collection_id INTEGER,
@@ -25,12 +17,32 @@ CREATE TABLE IF NOT EXISTS path
     depth         INTEGER,
     FOREIGN KEY (collection_id) REFERENCES collection (id)
 );
+CREATE INDEX IF NOT EXISTS collection_path_collection_id_index ON collection_path (collection_id);
+
+CREATE TABLE IF NOT EXISTS directory
+(
+    id   INTEGER PRIMARY KEY,
+    path TEXT UNIQUE
+);
+CREATE INDEX IF NOT EXISTS directory_path_index ON directory (path);
 
 CREATE TABLE IF NOT EXISTS image
 (
     id               INTEGER PRIMARY KEY,
-    path_id          INTEGER,
+    directory_id     INTEGER,
+    filename         TEXT,
     im_original_date DATETIME,
     fs_modify_time   DATETIME,
-    FOREIGN KEY (path_id) REFERENCES path (id)
+    FOREIGN KEY (directory_id) REFERENCES directory (id)
 );
+CREATE INDEX IF NOT EXISTS image_directory_id_index ON image (directory_id);
+
+-- NOTE - on schema updates always update the schema
+-- last in case the original schema was partially created
+CREATE TABLE IF NOT EXISTS schema
+(
+    version INTEGER
+);
+
+INSERT INTO schema (version)
+VALUES (0);

@@ -5,7 +5,6 @@ import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.controls.GridView;
 import com.onebytellc.imageviewer.controls.ImageGridItem;
 import com.onebytellc.imageviewer.logger.Logger;
-import com.onebytellc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -20,8 +19,6 @@ public class ImageGridCanvasController {
 
     @FXML
     private GridView<ImageGridItem> gridView;
-
-    private Subscription subscription;
 
     @FXML
     private void initialize() {

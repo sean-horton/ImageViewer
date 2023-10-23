@@ -1,19 +1,12 @@
 package com.onebytellc.imageviewer.backend;
 
-import com.onebytellc.imageviewer.backend.image.ImageItem;
 import com.onebytellc.imageviewer.controls.ImageGridItem;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
-
-import java.util.List;
 
 public class DisplayState {
-
 
     // Image size is calculated from (DEFAULT_IMAGE_SIZE * scaleFactor)
     private final DoubleProperty gridBaseImageSize = new SimpleDoubleProperty();
@@ -48,4 +41,5 @@ public class DisplayState {
     public ObservableList<ImageGridItem> activeCollectionProperty() {
         return activeCollection;
     }
+
 }

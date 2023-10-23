@@ -5,6 +5,7 @@ package com.onebytellc.imageviewer.backend.db.jooq.tables;
 
 
 import com.onebytellc.imageviewer.backend.db.jooq.DefaultSchema;
+import com.onebytellc.imageviewer.backend.db.jooq.Indexes;
 import com.onebytellc.imageviewer.backend.db.jooq.Keys;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 
@@ -15,11 +16,12 @@ import java.util.function.Function;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Function4;
+import org.jooq.Function5;
+import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Records;
-import org.jooq.Row4;
+import org.jooq.Row5;
 import org.jooq.Schema;
 import org.jooq.SelectField;
 import org.jooq.Table;
@@ -58,9 +60,14 @@ public class Image extends TableImpl<ImageRecord> {
     public final TableField<ImageRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER, this, "");
 
     /**
-     * The column <code>image.path_id</code>.
+     * The column <code>image.directory_id</code>.
      */
-    public final TableField<ImageRecord, Integer> PATH_ID = createField(DSL.name("path_id"), SQLDataType.INTEGER, this, "");
+    public final TableField<ImageRecord, Integer> DIRECTORY_ID = createField(DSL.name("directory_id"), SQLDataType.INTEGER, this, "");
+
+    /**
+     * The column <code>image.filename</code>.
+     */
+    public final TableField<ImageRecord, String> FILENAME = createField(DSL.name("filename"), SQLDataType.CLOB, this, "");
 
     /**
      * The column <code>image.im_original_date</code>.
@@ -111,25 +118,30 @@ public class Image extends TableImpl<ImageRecord> {
     }
 
     @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.IMAGE_DIRECTORY_ID_INDEX);
+    }
+
+    @Override
     public UniqueKey<ImageRecord> getPrimaryKey() {
         return Keys.IMAGE__PK_IMAGE;
     }
 
     @Override
     public List<ForeignKey<ImageRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.IMAGE__FK_IMAGE_PK_PATH);
+        return Arrays.asList(Keys.IMAGE__FK_IMAGE_PK_DIRECTORY);
     }
 
-    private transient Path _path;
+    private transient Directory _directory;
 
     /**
-     * Get the implicit join path to the <code>path</code> table.
+     * Get the implicit join path to the <code>directory</code> table.
      */
-    public Path path() {
-        if (_path == null)
-            _path = new Path(this, Keys.IMAGE__FK_IMAGE_PK_PATH);
+    public Directory directory() {
+        if (_directory == null)
+            _directory = new Directory(this, Keys.IMAGE__FK_IMAGE_PK_DIRECTORY);
 
-        return _path;
+        return _directory;
     }
 
     @Override
@@ -172,18 +184,18 @@ public class Image extends TableImpl<ImageRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row4 type methods
+    // Row5 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row4<Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row4) super.fieldsRow();
+    public Row5<Integer, Integer, String, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row5) super.fieldsRow();
     }
 
     /**
      * Convenience mapping calling {@link SelectField#convertFrom(Function)}.
      */
-    public <U> SelectField<U> mapping(Function4<? super Integer, ? super Integer, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+    public <U> SelectField<U> mapping(Function5<? super Integer, ? super Integer, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
         return convertFrom(Records.mapping(from));
     }
 
@@ -191,7 +203,7 @@ public class Image extends TableImpl<ImageRecord> {
      * Convenience mapping calling {@link SelectField#convertFrom(Class,
      * Function)}.
      */
-    public <U> SelectField<U> mapping(Class<U> toType, Function4<? super Integer, ? super Integer, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
+    public <U> SelectField<U> mapping(Class<U> toType, Function5<? super Integer, ? super Integer, ? super String, ? super LocalDateTime, ? super LocalDateTime, ? extends U> from) {
         return convertFrom(toType, Records.mapping(from));
     }
 }

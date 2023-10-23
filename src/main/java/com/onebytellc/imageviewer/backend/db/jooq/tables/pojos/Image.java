@@ -17,7 +17,8 @@ public class Image implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Integer id;
-    private Integer pathId;
+    private Integer directoryId;
+    private String filename;
     private LocalDateTime imOriginalDate;
     private LocalDateTime fsModifyTime;
 
@@ -25,19 +26,22 @@ public class Image implements Serializable {
 
     public Image(Image value) {
         this.id = value.id;
-        this.pathId = value.pathId;
+        this.directoryId = value.directoryId;
+        this.filename = value.filename;
         this.imOriginalDate = value.imOriginalDate;
         this.fsModifyTime = value.fsModifyTime;
     }
 
     public Image(
         Integer id,
-        Integer pathId,
+        Integer directoryId,
+        String filename,
         LocalDateTime imOriginalDate,
         LocalDateTime fsModifyTime
     ) {
         this.id = id;
-        this.pathId = pathId;
+        this.directoryId = directoryId;
+        this.filename = filename;
         this.imOriginalDate = imOriginalDate;
         this.fsModifyTime = fsModifyTime;
     }
@@ -57,17 +61,31 @@ public class Image implements Serializable {
     }
 
     /**
-     * Getter for <code>image.path_id</code>.
+     * Getter for <code>image.directory_id</code>.
      */
-    public Integer getPathId() {
-        return this.pathId;
+    public Integer getDirectoryId() {
+        return this.directoryId;
     }
 
     /**
-     * Setter for <code>image.path_id</code>.
+     * Setter for <code>image.directory_id</code>.
      */
-    public void setPathId(Integer pathId) {
-        this.pathId = pathId;
+    public void setDirectoryId(Integer directoryId) {
+        this.directoryId = directoryId;
+    }
+
+    /**
+     * Getter for <code>image.filename</code>.
+     */
+    public String getFilename() {
+        return this.filename;
+    }
+
+    /**
+     * Setter for <code>image.filename</code>.
+     */
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     /**
@@ -113,11 +131,17 @@ public class Image implements Serializable {
         }
         else if (!this.id.equals(other.id))
             return false;
-        if (this.pathId == null) {
-            if (other.pathId != null)
+        if (this.directoryId == null) {
+            if (other.directoryId != null)
                 return false;
         }
-        else if (!this.pathId.equals(other.pathId))
+        else if (!this.directoryId.equals(other.directoryId))
+            return false;
+        if (this.filename == null) {
+            if (other.filename != null)
+                return false;
+        }
+        else if (!this.filename.equals(other.filename))
             return false;
         if (this.imOriginalDate == null) {
             if (other.imOriginalDate != null)
@@ -139,7 +163,8 @@ public class Image implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
-        result = prime * result + ((this.pathId == null) ? 0 : this.pathId.hashCode());
+        result = prime * result + ((this.directoryId == null) ? 0 : this.directoryId.hashCode());
+        result = prime * result + ((this.filename == null) ? 0 : this.filename.hashCode());
         result = prime * result + ((this.imOriginalDate == null) ? 0 : this.imOriginalDate.hashCode());
         result = prime * result + ((this.fsModifyTime == null) ? 0 : this.fsModifyTime.hashCode());
         return result;
@@ -150,7 +175,8 @@ public class Image implements Serializable {
         StringBuilder sb = new StringBuilder("Image (");
 
         sb.append(id);
-        sb.append(", ").append(pathId);
+        sb.append(", ").append(directoryId);
+        sb.append(", ").append(filename);
         sb.append(", ").append(imOriginalDate);
         sb.append(", ").append(fsModifyTime);
 
