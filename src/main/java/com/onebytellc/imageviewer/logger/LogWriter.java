@@ -26,6 +26,8 @@ class LogWriter {
                     }
                 } catch (InterruptedException e) {
                     break; // normal shutdown
+                } catch (Exception e) {
+                    System.err.println("ERROR!!!! logger failed to write " + e.getMessage());
                 }
             }
             stopLatch.countDown();

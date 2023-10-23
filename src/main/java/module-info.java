@@ -6,6 +6,7 @@ module com.onebytellc.imageviewer {
     requires org.xerial.sqlitejdbc;
     requires org.jooq;
     requires org.apache.commons.imaging;
+    requires java.desktop;
 
     opens com.onebytellc.imageviewer to javafx.fxml;
     exports com.onebytellc.imageviewer;

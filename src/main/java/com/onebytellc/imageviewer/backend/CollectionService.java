@@ -13,10 +13,15 @@ import com.onebytellc.imageviewer.reactive.Executor;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.ZoneOffset;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +33,8 @@ public class CollectionService {
     private final Database database;
     private final ImageExplorer explorer;
     private final ImageIndexer indexer;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SS");
 
     public CollectionService(Database database, ImageExplorer explorer, ImageIndexer indexer) {
         this.database = database;
@@ -96,10 +103,13 @@ public class CollectionService {
 
         Set<String> newImageFile = new HashSet<>(newImages.stream().map(r -> r.getPath().getFileName().toString()).toList());
 
-        for (ImageRecord knownImage : knownImages) {
+        Iterator<ImageRecord> iter = knownImages.iterator();
+        while (iter.hasNext()) {
+            ImageRecord knownImage = iter.next();
             if (!newImageFile.contains(knownImage.getFilename())) {
                 LOG.info("remove file: " + knownImage.getFilename());
-                // TODO - remove
+                indexer.asyncRemoveIndex(ImageIndexer.Priority.LOW, knownImage);
+                iter.remove();
             }
         }
 
@@ -110,14 +120,21 @@ public class CollectionService {
                 ImageRecord record = database.addImage(directoryRecord, newImage);
                 knownImages.add(record);
                 indexer.asyncIndex(ImageIndexer.Priority.MEDIUM, record, newImage);
-            } else if (im.getFsModifyTime() == null ||
-                    Files.getLastModifiedTime(newImage.getPath()).toInstant()
-                            .isAfter(im.getFsModifyTime().toInstant(ZoneOffset.UTC))) {
+            } else if (im.getFsModifyTime() == null) {
+                FileTime fileLastModified = Files.getLastModifiedTime(newImage.getPath());
+                LocalDateTime fileTime = LocalDateTime.ofInstant(fileLastModified.toInstant(), ZoneId.systemDefault());
+                LocalDateTime savedTime = im.getFsModifyTime();
+
+                if (savedTime != null && fileTime.truncatedTo(ChronoUnit.MILLIS).isBefore(savedTime.truncatedTo(ChronoUnit.MILLIS))) {
+                    continue;
+                }
+
                 LOG.info("reindex file: " + newImage.getPath().getFileName());
                 indexer.asyncIndex(ImageIndexer.Priority.MEDIUM, im, newImage);
             }
         }
 
+        // TODO - conver Image record to some UI thing
 //                    for (ImageLoader loader : event.getLoader()) {
 //                        activeCollection.add(new ImageGridItem(new ImageItem(loader)));
 //                    }

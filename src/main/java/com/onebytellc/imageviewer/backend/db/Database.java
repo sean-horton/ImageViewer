@@ -53,7 +53,7 @@ public class Database {
             // "jdbc:sqlite:C:/work/mydatabase.db"
             // TODO - needs to be passed property
             Class.forName("org.sqlite.JDBC");
-            String savePath = "/Users/shorton/imageviewtest/db/";
+            String savePath = "/Users/shorton/imageviewdata/";
             conn = DriverManager.getConnection("jdbc:sqlite:" + savePath + "/imageview.db");
 
             DSLContext ctx = DSL.using(conn, SQLDialect.SQLITE);
