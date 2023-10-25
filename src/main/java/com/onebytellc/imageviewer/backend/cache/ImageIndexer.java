@@ -73,10 +73,32 @@ public class ImageIndexer {
 
                 // read file data
                 FileTime lastModified = Files.getLastModifiedTime(loader.getPath());
-                ImageData data = loader.readFromDisk();
+                ImageData data = null;
+
+                // do we think we are already up to date?
+                boolean upToDate = false;
+                LocalDateTime fsTime = LocalDateTime.ofInstant(Files.getLastModifiedTime(loader.getPath())
+                        .toInstant().truncatedTo(ChronoUnit.MILLIS), ZoneId.systemDefault());
+                LocalDateTime savedTime = record.getFsModifyTime().truncatedTo(ChronoUnit.MILLIS);
+                if (!fsTime.isAfter(savedTime)) {
+                    upToDate = true;
+                }
 
                 // write indexed images to disk
                 for (ImageCacheDefinition cacheDefinition : definitions) {
+                    String name = cacheDefinition.getFileName(record.getId() + "");
+                    Path path = cachePath.resolve(name);
+
+                    // see if we can skip the index
+                    if (Files.exists(path) && upToDate) {
+                        continue;
+                    }
+
+                    // we load data here to try and skip loading if we don't need too
+                    if (data == null) {
+                        data = loader.readFromDisk();
+                    }
+
                     indexImage(record, data, cacheDefinition);
                 }
 
@@ -95,20 +117,11 @@ public class ImageIndexer {
         });
     }
 
-    private void indexImage(ImageRecord record, ImageData data, ImageCacheDefinition cacheDefinition) throws IOException {
-        String name = cacheDefinition.getFileName(record.getId() + "");
-        Path path = cachePath.resolve(name);
+    private void indexImage(ImageRecord record, ImageData data,
+                            ImageCacheDefinition cacheDefinition) throws IOException {
 
-        // see if we already have this indexed
-        if (Files.exists(path)) {
-            LocalDateTime fsTime = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant()
-                    .truncatedTo(ChronoUnit.MILLIS), ZoneId.systemDefault());
-            LocalDateTime savedTime = record.getFsModifyTime().truncatedTo(ChronoUnit.MILLIS);
-            if (!fsTime.isAfter(savedTime)) {
-                return;
-            }
-        }
-        
+        LOG.debug("Indexing image {}", record.getId());
+
         double w = data.getImage().getWidth();
         double h = data.getImage().getHeight();
 
@@ -130,7 +143,9 @@ public class ImageIndexer {
         graphics2D.drawImage(data.getImage(), 0, 0, (int) w, (int) h, null);
         graphics2D.dispose();
 
-        File indexImg = new File(path.toString());
+        // save cache image
+        String name = cacheDefinition.getFileName(record.getId() + "");
+        File indexImg = new File(cachePath.resolve(name).toString());
         ImageIO.write(resizedImage, "jpg", indexImg);
     }
 
