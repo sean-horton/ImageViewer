@@ -1,7 +1,7 @@
 package com.onebytellc.imageviewer.ui.display.grid;
 
 import com.onebytellc.imageviewer.backend.Context;
-import com.onebytellc.imageviewer.backend.ImageData;
+import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.ui.display.GridSizeParser;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class ImageGridController {
 
     @FXML
-    private GridView<ImageData> gridView;
+    private GridView<ImageHandle> gridView;
 
     @FXML
     private void initialize() {
@@ -36,10 +36,10 @@ public class ImageGridController {
             scaleGrid();
         });
 
-        for (int i = 0; i < 2000; i++) {
-            gridView.getItems().add(new ImageData() {
-            });
-        }
+//        for (int i = 0; i < 2000; i++) {
+//            gridView.getItems().add(new ImageHandle() {
+//            });
+//        }
     }
 
     private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();

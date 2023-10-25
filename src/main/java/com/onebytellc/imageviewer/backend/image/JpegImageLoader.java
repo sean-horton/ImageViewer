@@ -14,8 +14,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class JpegImageLoader implements ImageLoader {
+
+    private static final DateTimeFormatter JPEG_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
 
     private final Path path;
 
@@ -45,9 +48,9 @@ public class JpegImageLoader implements ImageLoader {
                 if (null != exif) {
                     String[] outputSet = exif.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
                     if (outputSet != null) {
-                        // TODO
-//                        builder.setOriginalDate(LocalDateTime.parse(outputSet[0]));
+                        builder.setOriginalDate(LocalDateTime.parse(outputSet[0], JPEG_DATE_FORMAT));
                     }
+                    // TODO - probably other params?
                 }
             }
 

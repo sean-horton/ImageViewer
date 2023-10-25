@@ -6,6 +6,10 @@ public interface ImageTypeDefinition {
 
     ImageLoader createLoader(Path path);
 
-    boolean isLoadable(Path path);
+    default boolean isLoadable(Path path) {
+        return isLoadable(path.getFileName().toString());
+    }
+
+    boolean isLoadable(String path);
 
 }

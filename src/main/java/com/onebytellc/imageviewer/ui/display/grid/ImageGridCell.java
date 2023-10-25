@@ -1,23 +1,23 @@
 package com.onebytellc.imageviewer.ui.display.grid;
 
 import com.onebytellc.imageviewer.ViewNode;
-import com.onebytellc.imageviewer.backend.ImageData;
+import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.ui.display.ImageViewController;
 import javafx.scene.Node;
 import org.controlsfx.control.GridCell;
 import org.controlsfx.control.GridView;
 
-public class ImageGridCell extends GridCell<ImageData> {
+public class ImageGridCell extends GridCell<ImageHandle> {
 
-    private final GridView<ImageData> gridView;
+    private final GridView<ImageHandle> gridView;
     private ViewNode<Node, ImageViewController> viewNode;
 
-    public ImageGridCell(GridView<ImageData> gridView) {
+    public ImageGridCell(GridView<ImageHandle> gridView) {
         this.gridView = gridView;
     }
 
     @Override
-    protected void updateItem(ImageData item, boolean empty) {
+    protected void updateItem(ImageHandle item, boolean empty) {
         super.updateItem(item, empty);
 
         if (empty) {

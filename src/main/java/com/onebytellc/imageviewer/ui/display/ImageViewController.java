@@ -1,7 +1,7 @@
 package com.onebytellc.imageviewer.ui.display;
 
 import com.onebytellc.imageviewer.ViewNode;
-import com.onebytellc.imageviewer.backend.ImageData;
+import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.logger.Logger;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -85,7 +85,7 @@ public class ImageViewController {
         imageView.fitHeightProperty().bind(gridView.cellHeightProperty());
     }
 
-    public void setImageData(ImageData imageData) {
+    public void setImageData(ImageHandle imageData) {
 
     }
 

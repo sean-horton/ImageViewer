@@ -18,7 +18,7 @@ import javafx.scene.text.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GridView<T extends GridItem> extends AnchorPane {
+public class GridView<T> extends AnchorPane {
 
     private static final int MAX_IMAGES_ON_SCREEN = 2000;
 
@@ -32,6 +32,7 @@ public class GridView<T extends GridItem> extends AnchorPane {
     private ObservableList<T> items = FXCollections.observableArrayList();
     private List<DisplayBounds> bounds = new ArrayList<>();
     private ScrollBarDetector scrollBarDetector = new ScrollBarDetector();
+    private GridCellFactory<T> gridCellFactory;
 
     public GridView() {
         canvas = new Canvas();
@@ -62,7 +63,7 @@ public class GridView<T extends GridItem> extends AnchorPane {
         canvas.widthProperty().addListener((observable, oldValue, newValue) -> redraw());
 
         // Redraw when items change
-        items.addListener((ListChangeListener<GridItem>) c -> redraw());
+        items.addListener((ListChangeListener<T>) c -> redraw());
 
         // scroll listeners
         canvas.setOnScrollStarted(Event::consume);
@@ -152,6 +153,10 @@ public class GridView<T extends GridItem> extends AnchorPane {
         return scaleFactor;
     }
 
+    public void setGridCellFactory(GridCellFactory<T> cellFactory) {
+        this.gridCellFactory = cellFactory;
+    }
+
     ////////////////////
     // Private
     private double allContentHeight() {
@@ -211,7 +216,7 @@ public class GridView<T extends GridItem> extends AnchorPane {
             // TODO - if there are millions of items it would be faster to use
             //  binary search to find first row that needs to be painted
 
-            GridItem item = items.get(i);
+            GridCell<T> item = gridCellFactory.create();
 
             boolean draw = true;
             if (offX + sizeW < 0 || offY + sizeH < 0) draw = false;
@@ -224,7 +229,7 @@ public class GridView<T extends GridItem> extends AnchorPane {
                     canvas.getGraphicsContext2D().setFill(Color.RED);
                     canvas.getGraphicsContext2D().fillRect(finalOffX, finalOffY, sizeW, sizeH);
                 }));
-                item.draw(canvas, offX, offY, sizeW, sizeH);
+                item.draw(items.get(i), canvas, offX, offY, sizeW, sizeH);
             }
 
             offX += sizeW;

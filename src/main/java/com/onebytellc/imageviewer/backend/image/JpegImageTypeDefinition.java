@@ -1,8 +1,5 @@
 package com.onebytellc.imageviewer.backend.image;
 
-import com.onebytellc.imageviewer.reactive.Repeatable;
-import javafx.scene.image.Image;
-
 import java.nio.file.Path;
 
 public class JpegImageTypeDefinition implements ImageTypeDefinition {
@@ -17,8 +14,8 @@ public class JpegImageTypeDefinition implements ImageTypeDefinition {
     }
 
     @Override
-    public boolean isLoadable(Path path) {
-        String name = path.getFileName().toString();
+    public boolean isLoadable(String name) {
         return name.endsWith(".jpg") || name.endsWith(".jpeg");
     }
+
 }

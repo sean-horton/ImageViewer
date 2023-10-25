@@ -1,10 +1,7 @@
 package com.onebytellc.imageviewer.backend;
 
-import com.onebytellc.imageviewer.controls.ImageGridItem;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class DisplayState {
 
@@ -13,7 +10,6 @@ public class DisplayState {
     private final DoubleProperty gridMinScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridMaxScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridImageScaleFactor = new SimpleDoubleProperty();
-    private final ObservableList<ImageGridItem> activeCollection = FXCollections.observableArrayList();
 
     public DisplayState() {
         gridBaseImageSize.setValue(50);
@@ -36,10 +32,6 @@ public class DisplayState {
 
     public DoubleProperty gridImageScaleFactorProperty() {
         return gridImageScaleFactor;
-    }
-
-    public ObservableList<ImageGridItem> activeCollectionProperty() {
-        return activeCollection;
     }
 
 }

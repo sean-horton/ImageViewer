@@ -62,4 +62,11 @@ public class Logger {
         LOG_WRITER.offer(new LogItem(name, string, values));
     }
 
+    public void debug(String string, Object... values) {
+        if (LEVEL.ordinal() < LogLevel.DEBUG.ordinal()) {
+            return;
+        }
+        LOG_WRITER.offer(new LogItem(name, string, values));
+    }
+
 }

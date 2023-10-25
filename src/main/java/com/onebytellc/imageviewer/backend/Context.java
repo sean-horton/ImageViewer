@@ -2,11 +2,10 @@ package com.onebytellc.imageviewer.backend;
 
 import com.onebytellc.imageviewer.backend.cache.ImageCache;
 import com.onebytellc.imageviewer.backend.cache.ImageCacheDefinition;
-import com.onebytellc.imageviewer.backend.cache.compressor.ImageCompressor;
-import com.onebytellc.imageviewer.backend.cache.compressor.JpegImageCompressor;
+import com.onebytellc.imageviewer.backend.cache.ImageIndexer;
+import com.onebytellc.imageviewer.backend.cache.PriorityThreadPool;
 import com.onebytellc.imageviewer.backend.db.Database;
 import com.onebytellc.imageviewer.backend.explorer.ImageExplorer;
-import com.onebytellc.imageviewer.backend.image.ImageIndexer;
 import com.onebytellc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebytellc.imageviewer.backend.image.JpegImageTypeDefinition;
 import com.onebytellc.imageviewer.logger.Logger;
@@ -20,6 +19,7 @@ public final class Context {
 
     private static Context INSTANCE;
 
+    private final PriorityThreadPool threadPool;
     private final DisplayState displayState;
     private final ImageExplorer imageExplorer;
     private final ImageCache imageCache;
@@ -28,9 +28,12 @@ public final class Context {
     private final ImageIndexer indexer;
     private final CollectionService collectionService;
 
-    private Context() {
+    private Context(ContextParameters parameters) {
+        // thread pool
+        this.threadPool = new PriorityThreadPool("ImageCache", 10);
+
         // database
-        this.database = new Database(Database.initialize());
+        this.database = new Database(Database.initialize(parameters.getDatabaseDir()));
 
         // searches for images in image collections
         List<ImageTypeDefinition> loaders = new ArrayList<>();
@@ -40,28 +43,35 @@ public final class Context {
         // ui state
         this.displayState = new DisplayState();
 
-        // image indexed
-        this.indexer = new ImageIndexer(10, database);
+        // size definitions (indexer and cache share sizes, but cache also has full size)
+        ImageCacheDefinition cacheSmall = new ImageCacheDefinition(64, 64, 3000);
+        ImageCacheDefinition cacheMedium = new ImageCacheDefinition(500, 500, 100);
+        ImageCacheDefinition cacheFull = new ImageCacheDefinition(Integer.MAX_VALUE, Integer.MAX_VALUE, 5);
 
-        // collection service
-        this.collectionService = new CollectionService(database, imageExplorer, indexer);
+        // index image sizes (NOTE: we don't want to index full size images)
+        List<ImageCacheDefinition> indexDef = new ArrayList<>(3);
+        indexDef.add(cacheSmall);
+        indexDef.add(cacheMedium);
+        this.indexer = new ImageIndexer(indexDef, loaders, parameters.getImageCacheDir(), database, threadPool);
 
         // cache definition
-        ImageCompressor compressor = new JpegImageCompressor(70);
-        List<ImageCacheDefinition> definitions = new ArrayList<>(3);
-        definitions.add(new ImageCacheDefinition(compressor, 64, 64)); // 64x64
-        definitions.add(new ImageCacheDefinition(compressor, 500, 500)); // 500x500
-        definitions.add(new ImageCacheDefinition(compressor, Integer.MAX_VALUE, Integer.MAX_VALUE)); // FULL
-        this.imageCache = new ImageCache(definitions);
+        List<ImageCacheDefinition> cacheDef = new ArrayList<>(3);
+        cacheDef.add(cacheSmall);
+        cacheDef.add(cacheMedium);
+        cacheDef.add(cacheFull);
+        this.imageCache = new ImageCache(cacheDef, indexer, parameters.getImageCacheDir(), threadPool);
+
+        // collection service
+        this.collectionService = new CollectionService(database, imageExplorer, indexer, imageCache);
     }
 
 
     //////////////////////
     // static
-    public static synchronized void initialize() {
+    public static synchronized void initialize(ContextParameters parameters) {
         if (INSTANCE == null) {
             LOG.info("Context initialized");
-            INSTANCE = new Context();
+            INSTANCE = new Context(parameters);
         } else {
             LOG.warn("Context was already created");
         }
@@ -89,11 +99,7 @@ public final class Context {
         return displayState;
     }
 
-    public ImageExplorer getImageExplorer() {
-        return imageExplorer;
-    }
-
-    public ImageCache getImageCache() {
-        return imageCache;
+    public CollectionService getCollectionService() {
+        return collectionService;
     }
 }
