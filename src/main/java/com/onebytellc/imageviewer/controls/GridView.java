@@ -157,6 +157,10 @@ public class GridView<T> extends AnchorPane {
         this.gridCellFactory = cellFactory;
     }
 
+    public void invalidate() {
+        redraw();
+    }
+
     ////////////////////
     // Private
     private double allContentHeight() {

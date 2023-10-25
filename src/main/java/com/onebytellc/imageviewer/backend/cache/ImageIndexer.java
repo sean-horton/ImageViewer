@@ -6,6 +6,7 @@ import com.onebytellc.imageviewer.backend.image.ImageData;
 import com.onebytellc.imageviewer.backend.image.ImageLoader;
 import com.onebytellc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebytellc.imageviewer.logger.Logger;
+import com.onebytellc.imageviewer.reactive.Streamable;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class ImageIndexer {
@@ -24,19 +26,23 @@ public class ImageIndexer {
     private static final Logger LOG = Logger.getInstance(ImageIndexer.class);
 
 
+    private final Streamable<Boolean> refreshRequest;
     private final List<ImageCacheDefinition> definitions;
     private final List<ImageTypeDefinition> imageLoaders;
     private final Database database;
     private final Path cachePath;
     private final PriorityThreadPool threadPool;
+    private final FetchLock fetchLock = new FetchLock();
 
     public ImageIndexer(List<ImageCacheDefinition> definitions, List<ImageTypeDefinition> imageLoaders,
-                        Path cachePath, Database database, PriorityThreadPool threadPool) {
+                        Path cachePath, Database database, Streamable<Boolean> refreshRequest,
+                        PriorityThreadPool threadPool) {
 
         this.definitions = definitions;
         this.imageLoaders = imageLoaders;
         this.cachePath = cachePath;
         this.database = database;
+        this.refreshRequest = refreshRequest;
         this.threadPool = threadPool;
     }
 
@@ -56,9 +62,14 @@ public class ImageIndexer {
         }
     }
 
-    public void asyncIndex(PriorityThreadPool.Priority priority, ImageRecord record, ImageLoader loader) {
+    public void asyncIndex(PriorityThreadPool.Priority priority, ImageRecord imageRecord, ImageLoader loader) {
         threadPool.offer(priority, () -> {
+            if (!fetchLock.lock(imageRecord.getId())) {
+                return;
+            }
+
             try {
+                ImageRecord record = database.getImageById(imageRecord.getId());
 
                 // read file data
                 FileTime lastModified = Files.getLastModifiedTime(loader.getPath());
@@ -73,16 +84,31 @@ public class ImageIndexer {
                 record.setFsModifyTime(LocalDateTime.ofInstant(lastModified.toInstant(), ZoneId.systemDefault()));
                 record.store();
 
-                // TODO - notify an image was indexed
+                refreshRequest.notify(true);
             } catch (IOException e) {
                 LOG.error("Unable to create image index IOException: {}", e.getMessage());
             } catch (Exception e) {
                 LOG.error("Unable to create image index: {}", e.getMessage());
+            } finally {
+                fetchLock.unlock(imageRecord.getId());
             }
         });
     }
 
     private void indexImage(ImageRecord record, ImageData data, ImageCacheDefinition cacheDefinition) throws IOException {
+        String name = cacheDefinition.getFileName(record.getId() + "");
+        Path path = cachePath.resolve(name);
+
+        // see if we already have this indexed
+        if (Files.exists(path)) {
+            LocalDateTime fsTime = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant()
+                    .truncatedTo(ChronoUnit.MILLIS), ZoneId.systemDefault());
+            LocalDateTime savedTime = record.getFsModifyTime().truncatedTo(ChronoUnit.MILLIS);
+            if (!fsTime.isAfter(savedTime)) {
+                return;
+            }
+        }
+        
         double w = data.getImage().getWidth();
         double h = data.getImage().getHeight();
 
@@ -104,8 +130,7 @@ public class ImageIndexer {
         graphics2D.drawImage(data.getImage(), 0, 0, (int) w, (int) h, null);
         graphics2D.dispose();
 
-        String name = cacheDefinition.getFileName(record.getId() + "");
-        File indexImg = new File(cachePath.resolve(name).toString());
+        File indexImg = new File(path.toString());
         ImageIO.write(resizedImage, "jpg", indexImg);
     }
 

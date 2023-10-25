@@ -40,9 +40,7 @@ public class ImageHandle {
         if (ref == null || (w > ref.getWidth() || h > ref.getHeight())) {
 
             // if our reference is null OR our reference is smaller than requested size
-            Image update = cache.asyncLoad(directory, imageRecord, (int) w, (int) h, () -> {
-                // TODO - notify
-            });
+            Image update = cache.asyncLoad(directory, imageRecord, (int) w, (int) h);
 
             if (update != null) {
                 image = new WeakReference<>(update);

@@ -39,19 +39,24 @@ public class CollectionService {
     private final ImageIndexer indexer;
     private final ImageCache imageCache;
     private final Streamable<ChangeSet<ImageHandle>> collectionImages = new Streamable<>();
-
+    private final Streamable<Boolean> refreshRequest;
 
     public CollectionService(Database database, ImageExplorer explorer, ImageIndexer indexer,
-                             ImageCache imageCache) {
+                             ImageCache imageCache, Streamable<Boolean> refreshRequest) {
         this.database = database;
         this.explorer = explorer;
         this.indexer = indexer;
         this.imageCache = imageCache;
+        this.refreshRequest = refreshRequest;
 
         // TODO - remove
         explorer.register("/Users/shorton/imageviewtest", 10)
                 .observeOn(Executor.processThread())
                 .subscribe(this::handleEvent);
+    }
+
+    public Observable<Boolean> cacheUpdateStream() {
+        return refreshRequest.observe();
     }
 
     public void selectCollection(int collectionId) {
@@ -173,7 +178,7 @@ public class CollectionService {
                 LocalDateTime fileTime = LocalDateTime.ofInstant(fileLastModified.toInstant(), ZoneId.systemDefault());
                 LocalDateTime savedTime = im.getFsModifyTime();
 
-                if (savedTime != null && fileTime.truncatedTo(ChronoUnit.MILLIS).isBefore(savedTime.truncatedTo(ChronoUnit.MILLIS))) {
+                if (savedTime != null && !fileTime.truncatedTo(ChronoUnit.MILLIS).isAfter(savedTime.truncatedTo(ChronoUnit.MILLIS))) {
                     continue;
                 }
 

@@ -24,7 +24,8 @@ public class ImageGridCanvasController {
     @FXML
     private GridView<ImageHandle> gridView;
 
-    private Subscription sub;
+    private Subscription cacheUpdateSub;
+    private Subscription collectionImageSub;
 
     @FXML
     private void initialize() {
@@ -37,7 +38,11 @@ public class ImageGridCanvasController {
         gridView.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
         gridView.setGridCellFactory(ImageGridCell::new);
 
-        sub = collectionService.collectionImageRecords()
+        cacheUpdateSub = collectionService.cacheUpdateStream()
+                .observeOn(Executor.fxApplicationThread())
+                .subscribe(b -> gridView.invalidate());
+
+        collectionImageSub = collectionService.collectionImageRecords()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(this::handeEvent);
     }

@@ -9,6 +9,7 @@ import com.onebytellc.imageviewer.backend.explorer.ImageExplorer;
 import com.onebytellc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebytellc.imageviewer.backend.image.JpegImageTypeDefinition;
 import com.onebytellc.imageviewer.logger.Logger;
+import com.onebytellc.imageviewer.reactive.Streamable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,21 +49,24 @@ public final class Context {
         ImageCacheDefinition cacheMedium = new ImageCacheDefinition(500, 500, 100);
         ImageCacheDefinition cacheFull = new ImageCacheDefinition(Integer.MAX_VALUE, Integer.MAX_VALUE, 5);
 
+        // Streamable for notifying cache has updated
+        Streamable<Boolean> refreshRequest = new Streamable<>();
+
         // index image sizes (NOTE: we don't want to index full size images)
         List<ImageCacheDefinition> indexDef = new ArrayList<>(3);
         indexDef.add(cacheSmall);
         indexDef.add(cacheMedium);
-        this.indexer = new ImageIndexer(indexDef, loaders, parameters.getImageCacheDir(), database, threadPool);
+        this.indexer = new ImageIndexer(indexDef, loaders, parameters.getImageCacheDir(), database, refreshRequest, threadPool);
 
         // cache definition
         List<ImageCacheDefinition> cacheDef = new ArrayList<>(3);
         cacheDef.add(cacheSmall);
         cacheDef.add(cacheMedium);
         cacheDef.add(cacheFull);
-        this.imageCache = new ImageCache(cacheDef, indexer, parameters.getImageCacheDir(), threadPool);
+        this.imageCache = new ImageCache(cacheDef, indexer, parameters.getImageCacheDir(), refreshRequest, threadPool);
 
         // collection service
-        this.collectionService = new CollectionService(database, imageExplorer, indexer, imageCache);
+        this.collectionService = new CollectionService(database, imageExplorer, indexer, imageCache, refreshRequest);
     }
 
 

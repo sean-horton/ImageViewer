@@ -6,6 +6,7 @@ import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebytellc.imageviewer.backend.image.ImageLoader;
 import com.onebytellc.imageviewer.logger.Logger;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import static com.onebytellc.imageviewer.backend.db.jooq.tables.CollectionPath.COLLECTION_PATH;
@@ -91,6 +93,14 @@ public class Database {
                 .set(record)
                 .returning()
                 .fetchOne();
+    }
+
+    public ImageRecord getImageById(int id) {
+        Optional<Record> r = context.select().from(IMAGE)
+                .where(IMAGE.ID.eq(id))
+                .fetchOptional();
+
+        return r.map(record -> record.into(ImageRecord.class)).orElse(null);
     }
 
 }

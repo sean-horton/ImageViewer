@@ -3,6 +3,7 @@ package com.onebytellc.imageviewer.backend.cache;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebytellc.imageviewer.collections.LRUCache;
 import com.onebytellc.imageviewer.logger.Logger;
+import com.onebytellc.imageviewer.reactive.Streamable;
 import javafx.scene.image.Image;
 
 import java.io.FileInputStream;
@@ -11,14 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ImageCache {
 
     private static final Logger LOG = Logger.getInstance(ImageCache.class);
 
+    private final Streamable<Boolean> refreshRequest;
     private final List<CacheDef> cache;
     private final ImageIndexer imageIndexer;
     private final Path cacheDir;
@@ -26,9 +26,11 @@ public class ImageCache {
     private final FetchLock fetchLock = new FetchLock();
 
     public ImageCache(List<ImageCacheDefinition> cacheDefinitions, ImageIndexer indexer,
-                      Path cacheDir, PriorityThreadPool threadPool) {
+                      Path cacheDir, Streamable<Boolean> refreshRequest, PriorityThreadPool threadPool) {
+
         this.imageIndexer = indexer;
         this.cacheDir = cacheDir;
+        this.refreshRequest = refreshRequest;
         this.threadPool = threadPool;
 
         // create a cache list that contains def and LRUCache
@@ -41,7 +43,7 @@ public class ImageCache {
         cache.sort(Comparator.comparingLong(o -> ((long) o.def.getW()) * ((long) o.def.getH())));
     }
 
-    public Image asyncLoad(Path srcDir, ImageRecord imageRecord, int w, int h, ImageLoadCallback callback) {
+    public Image asyncLoad(Path srcDir, ImageRecord imageRecord, int w, int h) {
 
         // find the appropriate cache definition
         CacheDef toUse = cache.get(0);
@@ -61,12 +63,14 @@ public class ImageCache {
         // If we made it this far we have to fetch from disk
         final CacheDef finalToUse = toUse;
         threadPool.offer(PriorityThreadPool.Priority.HIGH, () -> {
-            try {
-                if (!fetchLock.lock(imageRecord.getId())) {
-                    // making sure we are only fetching the image once
-                    return;
-                }
+            if (!fetchLock.lock(imageRecord.getId())) {
+                // Do we have a scheduled fetch? yes,
+                // making sure we are only fetching the image once
+                return;
+            }
 
+            try {
+                // Start a fetch for specific thumbnail. Is it on disk? return it
                 performLoad(srcDir, finalToUse, imageRecord);
             } catch (Exception e) {
                 LOG.error("Failed to open image {}", e.getMessage());
@@ -75,11 +79,6 @@ public class ImageCache {
             }
         });
 
-        // TODO - start thread
-        // 2. Do we have a scheduled fetch? yes, block
-        // 3. Start a fetch for specific thumbnail. Is it on disk? return it
-        // 4. else do we have a scheduled image indexing operation? yes? return
-        // 5. Start image indexer - it will create all image indexes
         return null;
     }
 
@@ -101,10 +100,11 @@ public class ImageCache {
             if (Files.exists(path)) {
                 Image image1 = new Image(new FileInputStream(path.toString()));
                 cacheDef.cache.put(record.getId(), image1);
-                // TODO - notify
+                refreshRequest.notify(true);
                 return;
             }
 
+            // If we made it to this point we have to start an index
             imageIndexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, srcDir, record);
         }
     }
@@ -117,23 +117,6 @@ public class ImageCache {
             this.def = cacheDefinitions;
             this.cache = cache;
         }
-    }
-
-    private static class FetchLock {
-        private final Set<Integer> inProgress = new HashSet<>();
-
-        public synchronized boolean lock(int key) {
-            if (inProgress.contains(key)) {
-                return false;
-            }
-            inProgress.add(key);
-            return true;
-        }
-
-        public synchronized void unlock(int key) {
-            inProgress.remove(key);
-        }
-
     }
 
 }
