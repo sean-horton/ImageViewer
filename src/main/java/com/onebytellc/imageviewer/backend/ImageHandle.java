@@ -8,12 +8,14 @@ import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+/**
+ * When ui calls load image on this class,
+ * it will check the WeakReference, if that
+ * is null it will fetch from cache and store in
+ * weak reference
+ */
 public class ImageHandle {
 
-    // When ui calls load image on this class,
-    // it will check the WeakReference, if that
-    // is null it will fetch from cache and store in
-    // weak reference
 
     private final ImageCache cache;
     private final Path directory;
@@ -28,6 +30,10 @@ public class ImageHandle {
 
     public int getId() {
         return imageRecord.getId();
+    }
+
+    public String getFileName() {
+        return imageRecord.getFilename();
     }
 
     public LocalDateTime getImOriginalDate() {

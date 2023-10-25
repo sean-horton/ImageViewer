@@ -103,4 +103,10 @@ public class Database {
         return r.map(record -> record.into(ImageRecord.class)).orElse(null);
     }
 
+    public void deleteImageById(int id) {
+        context.delete(IMAGE)
+                .where(IMAGE.ID.eq(id))
+                .execute();
+    }
+
 }

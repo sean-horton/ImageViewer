@@ -45,28 +45,36 @@ public class Logger {
         if (LEVEL.ordinal() < LogLevel.ERROR.ordinal()) {
             return;
         }
-        LOG_WRITER.offer(new LogItem(name, string, values));
+        LOG_WRITER.offer(new LogItem(LogLevel.ERROR, name, string, null, values));
     }
+
+    public void error(String string, Throwable throwable, Object... values) {
+        if (LEVEL.ordinal() < LogLevel.ERROR.ordinal()) {
+            return;
+        }
+        LOG_WRITER.offer(new LogItem(LogLevel.ERROR, name, string, throwable, values));
+    }
+
 
     public void warn(String string, Object... values) {
         if (LEVEL.ordinal() < LogLevel.WARN.ordinal()) {
             return;
         }
-        LOG_WRITER.offer(new LogItem(name, string, values));
+        LOG_WRITER.offer(new LogItem(LogLevel.WARN, name, string, null, values));
     }
 
     public void info(String string, Object... values) {
         if (LEVEL.ordinal() < LogLevel.INFO.ordinal()) {
             return;
         }
-        LOG_WRITER.offer(new LogItem(name, string, values));
+        LOG_WRITER.offer(new LogItem(LogLevel.INFO, name, string, null, values));
     }
 
     public void debug(String string, Object... values) {
         if (LEVEL.ordinal() < LogLevel.DEBUG.ordinal()) {
             return;
         }
-        LOG_WRITER.offer(new LogItem(name, string, values));
+        LOG_WRITER.offer(new LogItem(LogLevel.DEBUG, name, string, null, values));
     }
 
 }

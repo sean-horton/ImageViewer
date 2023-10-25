@@ -51,12 +51,13 @@ public final class Context {
 
         // Streamable for notifying cache has updated
         Streamable<Boolean> refreshRequest = new Streamable<>();
+        Streamable<ChangeSet<ImageHandle>> imageStreamable = new Streamable<>();
 
         // index image sizes (NOTE: we don't want to index full size images)
         List<ImageCacheDefinition> indexDef = new ArrayList<>(3);
         indexDef.add(cacheSmall);
         indexDef.add(cacheMedium);
-        this.indexer = new ImageIndexer(indexDef, loaders, parameters.getImageCacheDir(), database, refreshRequest, threadPool);
+        this.indexer = new ImageIndexer(indexDef, loaders, parameters.getImageCacheDir(), database, imageStreamable, threadPool);
 
         // cache definition
         List<ImageCacheDefinition> cacheDef = new ArrayList<>(3);
@@ -64,9 +65,10 @@ public final class Context {
         cacheDef.add(cacheMedium);
         cacheDef.add(cacheFull);
         this.imageCache = new ImageCache(cacheDef, indexer, parameters.getImageCacheDir(), refreshRequest, threadPool);
+        indexer.setImageCache(imageCache); // TODO - this is a code smell of looping dependencies, ImageIndexer <-> ImageCache
 
         // collection service
-        this.collectionService = new CollectionService(database, imageExplorer, indexer, imageCache, refreshRequest);
+        this.collectionService = new CollectionService(database, imageExplorer, indexer, imageCache, imageStreamable, refreshRequest);
     }
 
 

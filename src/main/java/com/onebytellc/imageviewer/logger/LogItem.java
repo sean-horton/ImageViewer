@@ -1,22 +1,65 @@
 package com.onebytellc.imageviewer.logger;
 
-import java.text.MessageFormat;
+import java.time.Instant;
 
 class LogItem {
 
-    private String name;
-    private String format;
-    private Object[] values;
-    private Exception e;
+    private final long time;
+    private final LogLevel level;
+    private final String name;
+    private final String format;
+    private final Object[] values;
+    private final Throwable throwable;
 
-    public LogItem(String name, String format, Object... values) {
+    public LogItem(LogLevel level, String name, String format, Throwable throwable, Object... values) {
+        this.time = System.currentTimeMillis();
+        this.level = level;
         this.name = name;
         this.format = format;
+        this.throwable = throwable;
         this.values = values;
     }
 
     @Override
     public String toString() {
-        return name + " - " + MessageFormat.format(format, values);
+        StringBuilder sb = new StringBuilder();
+        sb
+                .append(Instant.ofEpochMilli(time).toString())
+                .append(" [").append(level).append("] ")
+                .append(name)
+                .append(" - ");
+
+        buildFormat(sb, format, values);
+        if (throwable != null) {
+            buildException(sb, throwable);
+        }
+
+        return sb.toString();
+    }
+
+    private void buildFormat(StringBuilder sb, String format, Object... values) {
+        int i = 0;
+        int off = 0;
+        while (i < format.length() - 1 && off < values.length) {
+            if (format.charAt(i) == '{' && format.charAt(i + 1) == '}') {
+                sb.append(values[off]);
+                i++;
+            } else {
+                sb.append(format.charAt(i));
+            }
+            i++;
+        }
+
+        while (i < format.length()) {
+            sb.append(format.charAt(i++));
+        }
+    }
+
+    private void buildException(StringBuilder sb, Throwable t) {
+        sb.append("\n\t").append(t.getLocalizedMessage());
+        for (StackTraceElement stack : t.getStackTrace()) {
+            sb.append("\n\t\t");
+            sb.append(stack.toString());
+        }
     }
 }

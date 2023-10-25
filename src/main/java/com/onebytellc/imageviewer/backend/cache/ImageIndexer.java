@@ -1,5 +1,7 @@
 package com.onebytellc.imageviewer.backend.cache;
 
+import com.onebytellc.imageviewer.backend.ChangeSet;
+import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.backend.db.Database;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebytellc.imageviewer.backend.image.ImageData;
@@ -19,23 +21,32 @@ import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * schedules index tasks and will
+ * <ul>
+ *     <li>Load source image from disk</li>
+ *     <li>creates index/cached images of the source image and writes them to a cache dir</li>
+ * </ul>
+ */
 public class ImageIndexer {
 
     private static final Logger LOG = Logger.getInstance(ImageIndexer.class);
 
 
-    private final Streamable<Boolean> refreshRequest;
+    private final Streamable<ChangeSet<ImageHandle>> refreshRequest;
     private final List<ImageCacheDefinition> definitions;
     private final List<ImageTypeDefinition> imageLoaders;
     private final Database database;
     private final Path cachePath;
     private final PriorityThreadPool threadPool;
     private final FetchLock fetchLock = new FetchLock();
+    private ImageCache imageCache;
 
     public ImageIndexer(List<ImageCacheDefinition> definitions, List<ImageTypeDefinition> imageLoaders,
-                        Path cachePath, Database database, Streamable<Boolean> refreshRequest,
+                        Path cachePath, Database database, Streamable<ChangeSet<ImageHandle>> refreshRequest,
                         PriorityThreadPool threadPool) {
 
         this.definitions = definitions;
@@ -46,10 +57,23 @@ public class ImageIndexer {
         this.threadPool = threadPool;
     }
 
+    public void setImageCache(ImageCache imageCache) {
+        this.imageCache = imageCache;
+    }
+
     public void asyncRemoveIndex(PriorityThreadPool.Priority priority, ImageRecord record) {
         threadPool.offer(priority, () -> {
-            // TODO - remove indexed image
-            // TODO - delete record from DB
+            for (ImageCacheDefinition cacheDefinition : definitions) {
+                String name = cacheDefinition.getFileName(record.getId() + "");
+                Path path = cachePath.resolve(name);
+                LOG.debug("Deleting index for {}", path);
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    LOG.error("Failed to delete {}", e, name);
+                }
+                database.deleteImageById(record.getId());
+            }
         });
     }
 
@@ -79,8 +103,7 @@ public class ImageIndexer {
                 boolean upToDate = false;
                 LocalDateTime fsTime = LocalDateTime.ofInstant(Files.getLastModifiedTime(loader.getPath())
                         .toInstant().truncatedTo(ChronoUnit.MILLIS), ZoneId.systemDefault());
-                LocalDateTime savedTime = record.getFsModifyTime().truncatedTo(ChronoUnit.MILLIS);
-                if (!fsTime.isAfter(savedTime)) {
+                if (record.getFsModifyTime() != null && !fsTime.isAfter(record.getFsModifyTime().truncatedTo(ChronoUnit.MILLIS))) {
                     upToDate = true;
                 }
 
@@ -102,11 +125,17 @@ public class ImageIndexer {
                     indexImage(record, data, cacheDefinition);
                 }
 
-                // update database entry
-                record.setFsModifyTime(LocalDateTime.ofInstant(lastModified.toInstant(), ZoneId.systemDefault()));
-                record.store();
+                if (data != null) {
+                    // update database entry
+                    record.setFsModifyTime(LocalDateTime.ofInstant(lastModified.toInstant(), ZoneId.systemDefault()));
+                    record.setImOriginalDate(data.getOriginalDate());
+                    record.store();
 
-                refreshRequest.notify(true);
+                    // send an update event
+                    List<ImageHandle> handles = new ArrayList<>(1);
+                    handles.add(new ImageHandle(imageCache, loader.getPath(), record));
+                    refreshRequest.notify(new ChangeSet<>(false, null, handles, null));
+                }
             } catch (IOException e) {
                 LOG.error("Unable to create image index IOException: {}", e.getMessage());
             } catch (Exception e) {
@@ -144,6 +173,7 @@ public class ImageIndexer {
         graphics2D.dispose();
 
         // save cache image
+        Files.createDirectories(cachePath);
         String name = cacheDefinition.getFileName(record.getId() + "");
         File indexImg = new File(cachePath.resolve(name).toString());
         ImageIO.write(resizedImage, "jpg", indexImg);

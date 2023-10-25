@@ -1,5 +1,12 @@
 package com.onebytellc.imageviewer.backend.cache;
 
+/**
+ * Definition of cached images. Specify
+ * <ul>
+ *     <li>resolution of cached images on disk</li>
+ *     <li>How many of these images we will store in RAM for in memory cache</li>
+ * </ul>
+ */
 public class ImageCacheDefinition {
 
     private final int w;

@@ -4,7 +4,7 @@ import com.onebytellc.imageviewer.backend.ImageHandle;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 
-public class ImageGridCell implements GridCell<ImageHandle> {
+public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
 
     @Override
     public void draw(ImageHandle handle, Canvas canvas, double x, double y, double w, double h) {

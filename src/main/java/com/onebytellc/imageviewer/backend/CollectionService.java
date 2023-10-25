@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Manager over in image in-memory cache, image disk cache, and source disk images.
+ * Tries to link all the pieces together for the UI.
+ */
 public class CollectionService {
 
     private static Logger LOG = Logger.getInstance(DisplayState.class);
@@ -38,15 +42,18 @@ public class CollectionService {
     private final ImageExplorer explorer;
     private final ImageIndexer indexer;
     private final ImageCache imageCache;
-    private final Streamable<ChangeSet<ImageHandle>> collectionImages = new Streamable<>();
+    private final Streamable<ChangeSet<ImageHandle>> collectionImages;
     private final Streamable<Boolean> refreshRequest;
 
-    public CollectionService(Database database, ImageExplorer explorer, ImageIndexer indexer,
-                             ImageCache imageCache, Streamable<Boolean> refreshRequest) {
+    public CollectionService(Database database, ImageExplorer explorer, ImageIndexer indexer, ImageCache imageCache,
+                             Streamable<ChangeSet<ImageHandle>> imageStreamable,
+                             Streamable<Boolean> refreshRequest) {
+
         this.database = database;
         this.explorer = explorer;
         this.indexer = indexer;
         this.imageCache = imageCache;
+        this.collectionImages = imageStreamable;
         this.refreshRequest = refreshRequest;
 
         // TODO - remove
@@ -94,7 +101,7 @@ public class CollectionService {
             }
             collectionImages.notify(changeSet);
         } catch (Exception e) {
-            LOG.error("Unable to handle image explorer event: {}", e.getMessage());
+            LOG.error("Unable to handle image explorer event", e);
         }
     }
 
@@ -109,23 +116,61 @@ public class CollectionService {
         while (iter.hasNext()) {
             ImageRecord knownImage = iter.next();
             if (!newImageFile.contains(knownImage.getFilename())) {
-                LOG.info("remove file: " + knownImage.getFilename());
+                LOG.info("remove file: {}", knownImage.getFilename());
                 indexer.asyncRemoveIndex(PriorityThreadPool.Priority.LOW, knownImage);
                 iter.remove();
             }
         }
 
         // Add/update images that are missing/outdated in the DB compared to file system
-        List<ImageHandle> added = processAddUpdateImages(directoryRecord, knownImages, availableImages);
+        Map<String, ImageRecord> knownImageFile = new HashMap<>();
+        for (ImageRecord r : knownImages) {
+            knownImageFile.put(r.getFilename(), r);
+        }
+
+        for (ImageLoader newImage : availableImages) {
+            ImageRecord im = knownImageFile.get(newImage.getPath().getFileName().toString());
+            if (im == null) {
+                // ADDED
+                LOG.info("add file: {}", newImage.getPath().getFileName());
+                ImageRecord record = database.addImage(directoryRecord, newImage);
+                knownImages.add(record);
+                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, record, newImage);
+            } else if (im.getFsModifyTime() == null) {
+                FileTime fileLastModified = Files.getLastModifiedTime(newImage.getPath());
+                LocalDateTime fileTime = LocalDateTime.ofInstant(fileLastModified.toInstant(), ZoneId.systemDefault());
+                LocalDateTime savedTime = im.getFsModifyTime();
+
+                if (savedTime != null && !fileTime.truncatedTo(ChronoUnit.MILLIS).isAfter(savedTime.truncatedTo(ChronoUnit.MILLIS))) {
+                    continue;
+                }
+
+                // REINDEX
+                LOG.info("reindex file: {}", newImage.getPath().getFileName());
+                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, im, newImage);
+            }
+        }
 
         // NOTE: This is a init, so we want to add everything
+        Path dir = Path.of(directoryRecord.getPath());
+        List<ImageHandle> added = knownImages.stream()
+                .map(m -> new ImageHandle(imageCache, dir, m))
+                .toList();
         return new ChangeSet<>(false, added, null, null);
     }
 
     private ChangeSet<ImageHandle> handleAdd(DirectoryRecord directoryRecord,
                                              List<ImageRecord> knownImages,
                                              List<ImageLoader> addedImages) throws IOException {
-        List<ImageHandle> added = processAddUpdateImages(directoryRecord, knownImages, addedImages);
+        Path dir = Path.of(directoryRecord.getPath());
+        List<ImageHandle> added = addedImages.stream()
+                .map(m -> {
+                    LOG.debug("Adding file: {}", m.getPath());
+                    ImageRecord record = database.addImage(directoryRecord, m);
+                    indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, record, m);
+                    return new ImageHandle(imageCache, dir, record);
+                })
+                .toList();
         return new ChangeSet<>(false, added, null, null);
     }
 
@@ -133,7 +178,10 @@ public class CollectionService {
     private ChangeSet<ImageHandle> handleUpdate(DirectoryRecord directoryRecord,
                                                 List<ImageRecord> knownImages,
                                                 List<ImageLoader> updatedImages) throws IOException {
-        List<ImageHandle> updated = processAddUpdateImages(directoryRecord, knownImages, updatedImages);
+        Path dir = Path.of(directoryRecord.getPath());
+        List<ImageHandle> updated = knownImages.stream()
+                .map(m -> new ImageHandle(imageCache, dir, database.getImageById(m.getId())))
+                .toList();
         return new ChangeSet<>(false, null, updated, null);
     }
 
@@ -154,41 +202,6 @@ public class CollectionService {
         }
 
         return new ChangeSet<>(false, null, null, removed);
-    }
-
-    private List<ImageHandle> processAddUpdateImages(DirectoryRecord directoryRecord,
-                                                     List<ImageRecord> knownImages,
-                                                     List<ImageLoader> loadableImages) throws IOException {
-
-        Map<String, ImageRecord> knownImageFile = new HashMap<>();
-        for (ImageRecord r : knownImages) {
-            knownImageFile.put(r.getFilename(), r);
-        }
-
-        for (ImageLoader newImage : loadableImages) {
-            ImageRecord im = knownImageFile.get(newImage.getPath().getFileName().toString());
-            if (im == null) {
-                // ADDED
-                LOG.info("add file: " + newImage.getPath().getFileName());
-                ImageRecord record = database.addImage(directoryRecord, newImage);
-                knownImages.add(record);
-                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, record, newImage);
-            } else if (im.getFsModifyTime() == null) {
-                FileTime fileLastModified = Files.getLastModifiedTime(newImage.getPath());
-                LocalDateTime fileTime = LocalDateTime.ofInstant(fileLastModified.toInstant(), ZoneId.systemDefault());
-                LocalDateTime savedTime = im.getFsModifyTime();
-
-                if (savedTime != null && !fileTime.truncatedTo(ChronoUnit.MILLIS).isAfter(savedTime.truncatedTo(ChronoUnit.MILLIS))) {
-                    continue;
-                }
-
-                // REINDEX
-                LOG.info("reindex file: " + newImage.getPath().getFileName());
-                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, im, newImage);
-            }
-        }
-
-        return knownImages.stream().map(r -> new ImageHandle(imageCache, Path.of(directoryRecord.getPath()), r)).toList();
     }
 
 }

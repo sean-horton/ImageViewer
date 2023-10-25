@@ -32,7 +32,7 @@ public class GridView<T> extends AnchorPane {
     private ObservableList<T> items = FXCollections.observableArrayList();
     private List<DisplayBounds> bounds = new ArrayList<>();
     private ScrollBarDetector scrollBarDetector = new ScrollBarDetector();
-    private GridCellFactory<T> gridCellFactory;
+    private GridCellRenderer<T> gridCellRenderer;
 
     public GridView() {
         canvas = new Canvas();
@@ -153,8 +153,8 @@ public class GridView<T> extends AnchorPane {
         return scaleFactor;
     }
 
-    public void setGridCellFactory(GridCellFactory<T> cellFactory) {
-        this.gridCellFactory = cellFactory;
+    public void setGridCellRenderer(GridCellRenderer<T> cellFactory) {
+        this.gridCellRenderer = cellFactory;
     }
 
     public void invalidate() {
@@ -220,8 +220,6 @@ public class GridView<T> extends AnchorPane {
             // TODO - if there are millions of items it would be faster to use
             //  binary search to find first row that needs to be painted
 
-            GridCell<T> item = gridCellFactory.create();
-
             boolean draw = true;
             if (offX + sizeW < 0 || offY + sizeH < 0) draw = false;
             if (offX > canvas.getWidth() || offY > canvas.getHeight()) break; // no need to look further
@@ -233,7 +231,7 @@ public class GridView<T> extends AnchorPane {
                     canvas.getGraphicsContext2D().setFill(Color.RED);
                     canvas.getGraphicsContext2D().fillRect(finalOffX, finalOffY, sizeW, sizeH);
                 }));
-                item.draw(items.get(i), canvas, offX, offY, sizeW, sizeH);
+                gridCellRenderer.draw(items.get(i), canvas, offX, offY, sizeW, sizeH);
             }
 
             offX += sizeW;

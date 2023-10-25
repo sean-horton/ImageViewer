@@ -6,7 +6,7 @@ import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.controls.GridView;
-import com.onebytellc.imageviewer.controls.ImageGridCell;
+import com.onebytellc.imageviewer.controls.ImageGridRenderer;
 import com.onebytellc.imageviewer.logger.Logger;
 import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Subscription;
@@ -36,7 +36,7 @@ public class ImageGridCanvasController {
         gridView.minScaleFactorProperty().bind(state.gridMinScaleFactorProperty());
         gridView.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
         gridView.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
-        gridView.setGridCellFactory(ImageGridCell::new);
+        gridView.setGridCellRenderer(new ImageGridRenderer());
 
         cacheUpdateSub = collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
@@ -58,8 +58,20 @@ public class ImageGridCanvasController {
         }
 
         // update items
-        for (ImageHandle removed : change.getUpdated()) {
-            // not sure we need to update, just causing a refresh should be enough?
+        for (ImageHandle updated : change.getUpdated()) {
+            // TODO - this could be improved by using binary search on
+            //  imOriginalDate, and if it is null, binary search on name
+            //  in the 'null' sorted area. NOTE: in order to do this,
+            //  the updated records list needs to contain the old item + new item,
+            //  because we need to search for the old item as imOriginalDate may
+            //  be updating from null to a date OR from an old date to a new date
+            //    - OR we could just use a map as a lookup table
+            for (int i = 0; i < gridView.getItems().size(); i++) {
+                if (updated.getId() == gridView.getItems().get(i).getId()) {
+                    gridView.getItems().set(i, updated);
+                    break;
+                }
+            }
         }
 
         // add items
@@ -67,8 +79,12 @@ public class ImageGridCanvasController {
 
         // sort items
         gridView.getItems().sort((o1, o2) -> {
-            if (o1.getImOriginalDate() == null || o2.getImOriginalDate() == null) {
-                return 0;
+            if (o1.getImOriginalDate() == null && o2.getImOriginalDate() == null) {
+                return o1.getFileName().compareTo(o2.getFileName());
+            } else if (o1.getImOriginalDate() == null) {
+                return -1;
+            } else if (o2.getImOriginalDate() == null) {
+                return 1;
             }
             return o1.getImOriginalDate().compareTo(o2.getImOriginalDate());
         });
