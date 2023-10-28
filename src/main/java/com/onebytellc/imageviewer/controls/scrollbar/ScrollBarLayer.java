@@ -4,22 +4,22 @@ import com.onebytellc.imageviewer.controls.CanvasLayer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 
 public class ScrollBarLayer extends CanvasLayer {
 
-    private final ScrollBarDetector scrollBarDetector = new ScrollBarDetector();
 
     private final DoubleProperty contentHeight = new SimpleDoubleProperty();
     private final DoubleProperty contentOffset = new SimpleDoubleProperty();
 
-    public ScrollBarLayer() {
-        // scroll bar listener
-        scrollBarDetector.setOnScroll((start, current, off) ->
-                contentOffset.setValue(contentHeight.get() * ((-current.getY() + off) / getH())));
-    }
+    private Bounds bounds = new BoundingBox(0, 0, 0, 0);
+    private MouseEvent start;
+    private boolean isInGesture;
+    private double offset;
 
 
     //////////////////////
@@ -37,28 +37,33 @@ public class ScrollBarLayer extends CanvasLayer {
     // User input
     @Override
     public void onMousePressed(MouseEvent event) {
-        if (scrollBarDetector.onPressed(event)) {
+        if (bounds.contains(new Point2D(event.getX(), event.getY()))) {
+            isInGesture = true;
+            start = event;
+            offset = start.getY() - bounds.getMinY();
             event.consume();
         }
     }
 
     @Override
     public void onMouseReleased(MouseEvent event) {
-        if (scrollBarDetector.onMouseReleased(event)) {
+        if (isInGesture) {
             event.consume();
         }
     }
 
     @Override
     public void onMouseDragged(MouseEvent event) {
-        if (scrollBarDetector.onMouseDragged(event)) {
+        if (isInGesture) {
+            contentOffset.setValue(contentHeight.get() * ((-event.getY() + offset) / getH()));
             event.consume();
         }
     }
 
     @Override
     public void onMouseClicked(MouseEvent event) {
-        if (scrollBarDetector.onMouseClicked(event)) {
+        if (isInGesture) {
+            isInGesture = false;
             event.consume();
         }
     }
@@ -98,7 +103,7 @@ public class ScrollBarLayer extends CanvasLayer {
         getGraphics2D().fillRect(xPos, scrollBarOffset + bubble, scrollBarWidth, scrollBarHeight);
         getGraphics2D().fillArc(xPos, scrollBarOffset + scrollBarHeight, scrollBarWidth, scrollBarWidth, 180, 180, ArcType.CHORD);
 
-        scrollBarDetector.setBound(new BoundingBox(xPos, scrollBarOffset, scrollBarWidth, scrollBarHeight + scrollBarWidth + scrollBarWidth));
+        bounds = new BoundingBox(xPos, scrollBarOffset, scrollBarWidth, scrollBarHeight + scrollBarWidth + scrollBarWidth);
     }
 
 }
