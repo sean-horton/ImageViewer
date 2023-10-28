@@ -1,5 +1,6 @@
-package com.onebytellc.imageviewer.controls;
+package com.onebytellc.imageviewer.controls.scrollbar;
 
+import com.onebytellc.imageviewer.controls.Detector;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -53,7 +54,7 @@ public class ScrollBarDetector implements Detector {
         return false;
     }
 
-    interface ScrollBarListener {
+    public interface ScrollBarListener {
         void onMove(MouseEvent start, MouseEvent current, double offset);
     }
 }

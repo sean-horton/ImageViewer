@@ -25,4 +25,10 @@ module com.onebytellc.imageviewer {
     opens com.onebytellc.imageviewer.controls to javafx.fxml;
 
     exports com.onebytellc.imageviewer.backend.db.jooq.tables.records;
+    exports com.onebytellc.imageviewer.controls.gridview;
+    opens com.onebytellc.imageviewer.controls.gridview to javafx.fxml;
+    exports com.onebytellc.imageviewer.controls.imageview;
+    opens com.onebytellc.imageviewer.controls.imageview to javafx.fxml;
+    exports com.onebytellc.imageviewer.controls.scrollbar;
+    opens com.onebytellc.imageviewer.controls.scrollbar to javafx.fxml;
 }

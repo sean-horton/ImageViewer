@@ -5,8 +5,10 @@ import com.onebytellc.imageviewer.backend.CollectionService;
 import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.backend.ImageHandle;
-import com.onebytellc.imageviewer.controls.GridView;
-import com.onebytellc.imageviewer.controls.ImageGridRenderer;
+import com.onebytellc.imageviewer.controls.CanvasView;
+import com.onebytellc.imageviewer.controls.gridview.GridLayer;
+import com.onebytellc.imageviewer.controls.gridview.ImageGridRenderer;
+import com.onebytellc.imageviewer.controls.scrollbar.ScrollBarLayer;
 import com.onebytellc.imageviewer.logger.Logger;
 import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Subscription;
@@ -21,8 +23,12 @@ public class ImageGridCanvasController {
 
     private static final Logger LOG = Logger.getInstance(ImageGridCanvasController.class);
 
+
     @FXML
-    private GridView<ImageHandle> gridView;
+    private CanvasView canvasView;
+    private GridLayer<ImageHandle> gridLayer = new GridLayer<>();
+    private ScrollBarLayer scrollBarLayer = new ScrollBarLayer();
+
 
     private Subscription cacheUpdateSub;
     private Subscription collectionImageSub;
@@ -32,15 +38,20 @@ public class ImageGridCanvasController {
         DisplayState state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
 
-        Bindings.bindBidirectional(gridView.scaleFactorProperty(), state.gridImageScaleFactorProperty());
-        gridView.minScaleFactorProperty().bind(state.gridMinScaleFactorProperty());
-        gridView.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
-        gridView.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
-        gridView.setGridCellRenderer(new ImageGridRenderer());
+        Bindings.bindBidirectional(gridLayer.contentHeightProperty(), scrollBarLayer.contentHeightProperty());
+        Bindings.bindBidirectional(gridLayer.contentOffsetProperty(), scrollBarLayer.contentOffsetProperty());
+        canvasView.addLayer(gridLayer);
+        canvasView.addLayer(scrollBarLayer);
+
+        Bindings.bindBidirectional(gridLayer.scaleFactorProperty(), state.gridImageScaleFactorProperty());
+        gridLayer.minScaleFactorProperty().bind(state.gridMinScaleFactorProperty());
+        gridLayer.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
+        gridLayer.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
+        gridLayer.setGridCellRenderer(new ImageGridRenderer());
 
         cacheUpdateSub = collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
-                .subscribe(b -> gridView.invalidate());
+                .subscribe(b -> canvasView.invalidate());
 
         collectionImageSub = collectionService.collectionImageRecords()
                 .observeOn(Executor.fxApplicationThread())
@@ -49,12 +60,12 @@ public class ImageGridCanvasController {
 
     private void handeEvent(ChangeSet<ImageHandle> change) {
         if (change.isReset()) {
-            gridView.getItems().clear();
+            gridLayer.getItems().clear();
         }
 
         // remove items
         for (ImageHandle removed : change.getRemoved()) {
-            gridView.getItems().removeIf(item -> item.getId() == removed.getId());
+            gridLayer.getItems().removeIf(item -> item.getId() == removed.getId());
         }
 
         // update items
@@ -66,19 +77,19 @@ public class ImageGridCanvasController {
             //  because we need to search for the old item as imOriginalDate may
             //  be updating from null to a date OR from an old date to a new date
             //    - OR we could just use a map as a lookup table
-            for (int i = 0; i < gridView.getItems().size(); i++) {
-                if (updated.getId() == gridView.getItems().get(i).getId()) {
-                    gridView.getItems().set(i, updated);
+            for (int i = 0; i < gridLayer.getItems().size(); i++) {
+                if (updated.getId() == gridLayer.getItems().get(i).getId()) {
+                    gridLayer.getItems().set(i, updated);
                     break;
                 }
             }
         }
 
         // add items
-        gridView.getItems().addAll(change.getAdded());
+        gridLayer.getItems().addAll(change.getAdded());
 
         // sort items
-        gridView.getItems().sort((o1, o2) -> {
+        gridLayer.getItems().sort((o1, o2) -> {
             if (o1.getImOriginalDate() == null && o2.getImOriginalDate() == null) {
                 return o1.getFileName().compareTo(o2.getFileName());
             } else if (o1.getImOriginalDate() == null) {
