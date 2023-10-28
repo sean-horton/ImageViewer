@@ -93,6 +93,7 @@ public class ImageCache {
             String fileName = record.getFilename();
             Image image1 = new Image(new FileInputStream(srcDir.resolve(fileName).toString()));
             cacheDef.cache.put(record.getId(), image1);
+            refreshRequest.notify(true);
         } else {
             String fileName = cacheDef.def.getFileName(record.getId() + "");
             Path path = cacheDir.resolve(fileName);

@@ -15,9 +15,12 @@ public class ImageLayer extends CanvasLayer {
     private final ObjectProperty<ImageHandle> imageProperty = new SimpleObjectProperty<>();
 
     public ImageLayer() {
-        imageProperty.addListener((observable, oldValue, newValue) -> draw());
+        imageProperty.addListener((observable, oldValue, newValue) -> invalidate());
     }
 
+    public ObjectProperty<ImageHandle> imagePropertyProperty() {
+        return imageProperty;
+    }
 
     @Override
     public void draw() {
@@ -34,13 +37,13 @@ public class ImageLayer extends CanvasLayer {
         // resize
         double w = image.getWidth();
         double h = image.getHeight();
-        if (w > getW()) {
-            double ratio = getW() / w;
-            w *= ratio;
-            h *= ratio;
-        }
+
+        double ratio = getW() / w;
+        w *= ratio;
+        h *= ratio;
+
         if (h > getH()) {
-            double ratio = getH() / h;
+            ratio = getH() / h;
             w *= ratio;
             h *= ratio;
         }

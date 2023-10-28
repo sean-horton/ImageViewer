@@ -1,7 +1,6 @@
 package com.onebytellc.imageviewer.controls.gridview;
 
 import com.onebytellc.imageviewer.backend.ImageHandle;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -17,20 +16,12 @@ public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
         double drawW = image.getWidth();
         double drawH = image.getHeight();
 
-        if (drawW < w) {
-            double ratio = w / drawW;
-            drawW *= ratio;
-            drawH *= ratio;
-        }
-
-        if (drawW > w) {
-            double ratio = w / drawW;
-            drawW *= ratio;
-            drawH *= ratio;
-        }
+        double ratio = w / drawW;
+        drawW *= ratio;
+        drawH *= ratio;
 
         if (drawH > h) {
-            double ratio = h / drawH;
+            ratio = h / drawH;
             drawW *= ratio;
             drawH *= ratio;
         }
