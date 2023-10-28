@@ -32,9 +32,10 @@ public class GridLayer<T> extends CanvasLayer {
     private final DoubleProperty contentOffset = new SimpleDoubleProperty();
 
     // state
-    private ObservableList<T> items = FXCollections.observableArrayList();
-    private List<DisplayBounds> cellBounds = new ArrayList<>();
+    private final ObservableList<T> items = FXCollections.observableArrayList();
+    private final List<DisplayBounds<T>> cellBounds = new ArrayList<>();
     private GridCellRenderer<T> gridCellRenderer;
+    private GridCellClickedListener<T> gridCellClickedListener;
 
     public GridLayer() {
         // Redraw when items change
@@ -52,9 +53,12 @@ public class GridLayer<T> extends CanvasLayer {
     // User input
     @Override
     public void onMouseClicked(MouseEvent event) {
-        for (DisplayBounds bound : cellBounds) {
+        for (DisplayBounds<T> bound : cellBounds) {
             if (bound.bounds.contains(new Point2D(event.getX(), event.getY()))) {
                 bound.action.run();
+                if (gridCellClickedListener != null) {
+                    gridCellClickedListener.onClicked(bound.item, bound.bounds);
+                }
                 event.consume();
                 return;
             }
@@ -120,16 +124,20 @@ public class GridLayer<T> extends CanvasLayer {
         return scaleFactor;
     }
 
-    public void setGridCellRenderer(GridCellRenderer<T> cellFactory) {
-        this.gridCellRenderer = cellFactory;
-    }
-
     public DoubleProperty contentHeightProperty() {
         return contentHeight;
     }
 
     public DoubleProperty contentOffsetProperty() {
         return contentOffset;
+    }
+
+    public void setGridCellRenderer(GridCellRenderer<T> cellFactory) {
+        this.gridCellRenderer = cellFactory;
+    }
+
+    public void setOnCellClicked(GridCellClickedListener<T> listener) {
+        gridCellClickedListener = listener;
     }
 
 
@@ -189,7 +197,7 @@ public class GridLayer<T> extends CanvasLayer {
             if (draw) {
                 double finalOffX = offX;
                 double finalOffY = offY;
-                cellBounds.add(new DisplayBounds(new BoundingBox(offX, offY, sizeW, sizeH), () -> {
+                cellBounds.add(new DisplayBounds<>(items.get(i), new BoundingBox(offX, offY, sizeW, sizeH), () -> {
                     getGraphics2D().setFill(Color.RED);
                     getGraphics2D().fillRect(finalOffX, finalOffY, sizeW, sizeH);
                 }));
@@ -228,11 +236,14 @@ public class GridLayer<T> extends CanvasLayer {
         return new double[]{(w / count) - 0.01, prefSize};
     }
 
-    private static class DisplayBounds {
+    private static class DisplayBounds<T> {
+
+        private T item;
         private Bounds bounds;
         private Runnable action;
 
-        public DisplayBounds(Bounds bounds, Runnable action) {
+        public DisplayBounds(T item, Bounds bounds, Runnable action) {
+            this.item = item;
             this.bounds = bounds;
             this.action = action;
         }

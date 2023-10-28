@@ -8,12 +8,14 @@ import com.onebytellc.imageviewer.backend.ImageHandle;
 import com.onebytellc.imageviewer.controls.CanvasView;
 import com.onebytellc.imageviewer.controls.gridview.GridLayer;
 import com.onebytellc.imageviewer.controls.gridview.ImageGridRenderer;
+import com.onebytellc.imageviewer.controls.imageview.ImageLayer;
 import com.onebytellc.imageviewer.controls.scrollbar.ScrollBarLayer;
 import com.onebytellc.imageviewer.logger.Logger;
 import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.input.KeyEvent;
 
 /**
  * This is the image grid that can display 1,000's of images at
@@ -28,26 +30,41 @@ public class ImageGridCanvasController {
     private CanvasView canvasView;
     private GridLayer<ImageHandle> gridLayer = new GridLayer<>();
     private ScrollBarLayer scrollBarLayer = new ScrollBarLayer();
+    private ImageLayer imageLayer = new ImageLayer();
 
 
     private Subscription cacheUpdateSub;
     private Subscription collectionImageSub;
+    private ImageHandle viewingImage;
 
     @FXML
     private void initialize() {
         DisplayState state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
 
+
         Bindings.bindBidirectional(gridLayer.contentHeightProperty(), scrollBarLayer.contentHeightProperty());
         Bindings.bindBidirectional(gridLayer.contentOffsetProperty(), scrollBarLayer.contentOffsetProperty());
-        canvasView.addLayer(gridLayer);
-        canvasView.addLayer(scrollBarLayer);
+        canvasView.attach(gridLayer);
+        canvasView.attach(scrollBarLayer); // TODO - this should be added by gridLayer as an internal layer
 
         Bindings.bindBidirectional(gridLayer.scaleFactorProperty(), state.gridImageScaleFactorProperty());
         gridLayer.minScaleFactorProperty().bind(state.gridMinScaleFactorProperty());
         gridLayer.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
         gridLayer.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
         gridLayer.setGridCellRenderer(new ImageGridRenderer());
+        gridLayer.setOnCellClicked((item, bounds) -> {
+            // TODO - start transition
+            canvasView.attach(imageLayer);
+            imageLayer.imagePropertyProperty().set(item);
+            viewingImage = item;
+            for (int i = 0; i < gridLayer.getItems().size(); i++) {
+                if (gridLayer.getItems().get(i) == viewingImage) {
+                    prefetchFullSizeImages(i);
+                    break;
+                }
+            }
+        });
 
         cacheUpdateSub = collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
@@ -56,6 +73,65 @@ public class ImageGridCanvasController {
         collectionImageSub = collectionService.collectionImageRecords()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(this::handeEvent);
+
+        canvasView.setOnKeyPressed(this::onKeyPress);
+    }
+
+    private void prefetchFullSizeImages(int i) {
+        gridLayer.getItems().get(i).getImage(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        if (i + 1 < gridLayer.getItems().size()) {
+            gridLayer.getItems().get(i + 1).getImage(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+        if (i - 1 >= 0) {
+            gridLayer.getItems().get(i - 1).getImage(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+    }
+
+    private void onKeyPress(KeyEvent event) {
+        if (viewingImage == null) {
+            return;
+        }
+
+        switch (event.getCode()) {
+            case ESCAPE -> {
+                event.consume();
+                // TODO - start transition
+                canvasView.detach(imageLayer);
+                viewingImage = null;
+            }
+            case SPACE -> {
+                event.consume();
+                // TODO - start sideshow
+            }
+            case RIGHT, UP -> { // next
+                event.consume();
+                for (int i = 0; i < gridLayer.getItems().size(); i++) {
+                    ImageHandle handle = gridLayer.getItems().get(i);
+                    if (viewingImage == handle) {
+                        if (i + 1 < gridLayer.getItems().size()) {
+                            imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i + 1));
+                            viewingImage = imageLayer.imagePropertyProperty().get();
+                            prefetchFullSizeImages(i + 1);
+                        }
+                        break;
+                    }
+                }
+            }
+            case LEFT, DOWN -> { // prev
+                event.consume();
+                for (int i = 0; i < gridLayer.getItems().size(); i++) {
+                    ImageHandle handle = gridLayer.getItems().get(i);
+                    if (viewingImage == handle) {
+                        if (i - 1 >= 0) {
+                            imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i - 1));
+                            viewingImage = imageLayer.imagePropertyProperty().get();
+                            prefetchFullSizeImages(i - 1);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void handeEvent(ChangeSet<ImageHandle> change) {

@@ -6,6 +6,6 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.onebytellc.imageviewer.ui.display.header.HeaderViewController">
 
-    <Slider fx:id="scaleSlider" orientation="HORIZONTAL"></Slider>
+    <Slider focusTraversable="false" fx:id="scaleSlider" orientation="HORIZONTAL"></Slider>
 
 </HBox>

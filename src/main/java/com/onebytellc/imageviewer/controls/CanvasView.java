@@ -16,6 +16,14 @@ public class CanvasView extends AnchorPane {
     public CanvasView() {
         canvas = new Canvas();
 
+        // anchor pane does not gain focus by default
+        setFocusTraversable(true);
+        setOnMouseEntered(event -> {
+            event.consume();
+            requestFocus();
+            setFocused(true);
+        });
+
         // allow anchor pane to resize
         setMinWidth(0);
         setMinHeight(0);
@@ -77,9 +85,19 @@ public class CanvasView extends AnchorPane {
     }
 
 
-    public void addLayer(CanvasLayer layer) {
+    public void attach(CanvasLayer layer) {
+        if (layers.contains(layer)) {
+            return; // TODO - maybe remove it and put on top?
+        }
+
         layer.attach(this);
         layers.add(layer);
+        invalidate();
+    }
+
+    public void detach(CanvasLayer layer) {
+        layers.remove(layer);
+        invalidate();
     }
 
     public void playTransition(Transition transition) {
