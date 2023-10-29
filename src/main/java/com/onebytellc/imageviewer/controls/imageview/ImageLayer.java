@@ -24,7 +24,13 @@ public class ImageLayer extends CanvasLayer {
 
 
     public ImageLayer() {
-        imageProperty.addListener((observable, oldValue, newValue) -> invalidate());
+        imageProperty.addListener((observable, oldValue, newValue) -> {
+            // when the image changes, zoom back to regular full screen
+            offsetX.setValue(0);
+            offsetY.setValue(0);
+            zoomScale.setValue(1);
+            invalidate();
+        });
     }
 
     /////////////////////
@@ -106,9 +112,11 @@ public class ImageLayer extends CanvasLayer {
 
         double x = (getW() - w) / 2; // center image
         x += offsetX.get(); // scroll position
+        x += getX();
 
         double y = (getH() - h) / 2; // center the image
         y += offsetY.get(); // scroll position
+        y += getY();
 
         GraphicsContext ctx = getGraphics2D();
         ctx.drawImage(image, x, y, w * zoomScale.get(), h * zoomScale.get());

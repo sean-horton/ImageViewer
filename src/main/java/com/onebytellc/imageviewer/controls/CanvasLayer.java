@@ -1,5 +1,6 @@
 package com.onebytellc.imageviewer.controls;
 
+import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -9,6 +10,7 @@ import javafx.scene.input.ZoomEvent;
 public abstract class CanvasLayer {
 
     private CanvasView canvas;
+    private Bounds bounds;
 
     public abstract void draw();
 
@@ -16,6 +18,10 @@ public abstract class CanvasLayer {
     // package private
     void attach(CanvasView canvasView) {
         canvas = canvasView;
+    }
+
+    void overrideBounds(Bounds bounds) {
+        this.bounds = bounds;
     }
 
     /////////////////////
@@ -29,13 +35,20 @@ public abstract class CanvasLayer {
     }
 
     public double getW() {
-        return canvas.getWidth();
+        return bounds == null ? canvas.getWidth() : bounds.getWidth();
     }
 
     public double getH() {
-        return canvas.getHeight();
+        return bounds == null ? canvas.getHeight() : bounds.getHeight();
     }
 
+    public double getX() {
+        return bounds == null ? 0 : bounds.getMinX();
+    }
+
+    public double getY() {
+        return bounds == null ? 0 : bounds.getMinY();
+    }
 
     //////////////////////////////
     // User Action (to override)

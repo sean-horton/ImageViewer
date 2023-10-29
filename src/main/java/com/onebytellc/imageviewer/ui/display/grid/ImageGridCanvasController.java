@@ -5,7 +5,9 @@ import com.onebytellc.imageviewer.backend.CollectionService;
 import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.backend.ImageHandle;
+import com.onebytellc.imageviewer.controls.CanvasLayer;
 import com.onebytellc.imageviewer.controls.CanvasView;
+import com.onebytellc.imageviewer.controls.TransitionZoomExpand;
 import com.onebytellc.imageviewer.controls.gridview.GridLayer;
 import com.onebytellc.imageviewer.controls.gridview.ImageGridRenderer;
 import com.onebytellc.imageviewer.controls.imageview.ImageLayer;
@@ -15,7 +17,12 @@ import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.scene.input.KeyEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the image grid that can display 1,000's of images at
@@ -52,29 +59,38 @@ public class ImageGridCanvasController {
         gridLayer.minScaleFactorProperty().bind(state.gridMinScaleFactorProperty());
         gridLayer.maxScaleFactorProperty().bind(state.gridMaxScaleFactorProperty());
         gridLayer.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
-        gridLayer.setGridCellRenderer(new ImageGridRenderer());
-        gridLayer.setOnCellClicked((item, bounds) -> {
-            // TODO - start transition
-            canvasView.attach(imageLayer);
-            imageLayer.imagePropertyProperty().set(item);
-            viewingImage = item;
-            for (int i = 0; i < gridLayer.getItems().size(); i++) {
-                if (gridLayer.getItems().get(i) == viewingImage) {
-                    prefetchFullSizeImages(i);
-                    break;
-                }
-            }
-        });
 
+        // grid cell config
+        gridLayer.setGridCellRenderer(new ImageGridRenderer());
+        gridLayer.setOnCellClicked(this::openFullScreenImage);
+
+        // when the cache has a new item (maybe a higher res was read from disk)
         cacheUpdateSub = collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(b -> canvasView.invalidate());
 
+        // Items have changed (added/updated/removed)
         collectionImageSub = collectionService.collectionImageRecords()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(this::handeEvent);
 
+        // keyboard press (example, move to next full screen image)
         canvasView.setOnKeyPressed(this::onKeyPress);
+    }
+
+    private void openFullScreenImage(ImageHandle item, Bounds itemBounds){
+        List<CanvasLayer> newLayers = new ArrayList<>();
+        newLayers.add(imageLayer);
+
+        canvasView.playTransition(new TransitionZoomExpand(itemBounds, new ArrayList<>(), newLayers), TimeUnit.MILLISECONDS, 250); // imageLayer
+        imageLayer.imagePropertyProperty().set(item);
+        viewingImage = item;
+        for (int i = 0; i < gridLayer.getItems().size(); i++) {
+            if (gridLayer.getItems().get(i) == viewingImage) {
+                prefetchFullSizeImages(i);
+                break;
+            }
+        }
     }
 
     private void prefetchFullSizeImages(int i) {

@@ -12,7 +12,7 @@
     </top>
 
     <center>
-        <SplitPane>
+        <SplitPane dividerPositions="0.25">
             <HBox VBox.vgrow="NEVER" prefHeight="200"></HBox>
             <fx:include VBox.vgrow="ALWAYS" fx:id="displayView" source="display/display-view.fxml"/>
         </SplitPane>

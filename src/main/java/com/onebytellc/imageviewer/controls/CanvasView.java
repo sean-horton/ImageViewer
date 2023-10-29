@@ -7,6 +7,7 @@ import javafx.scene.layout.AnchorPane;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class CanvasView extends AnchorPane {
 
@@ -100,12 +101,20 @@ public class CanvasView extends AnchorPane {
         invalidate();
     }
 
-    public void playTransition(Transition transition) {
+    public void playTransition(Transition transition, TimeUnit timeUnit, int time) {
+        long durAsMilli = timeUnit.toNanos(time);
+        long end = System.nanoTime() + durAsMilli;
+        transition.onAttach(this);
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-
-                this.stop();
+                if (now >= end) {
+                    this.stop();
+                    transition.onTransitionComplete(CanvasView.this);
+                } else {
+                    transition.tick(canvas, (durAsMilli - (end - now)) / (double) durAsMilli);
+                }
+                invalidate();
             }
         }.start();
     }
