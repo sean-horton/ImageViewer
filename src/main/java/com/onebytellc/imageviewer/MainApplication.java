@@ -3,6 +3,7 @@ package com.onebytellc.imageviewer;
 import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.ContextParameters;
 import com.onebytellc.imageviewer.logger.LogAppender;
+import com.onebytellc.imageviewer.logger.LogLevel;
 import com.onebytellc.imageviewer.logger.Logger;
 import com.onebytellc.imageviewer.ui.MainController;
 import javafx.application.Application;
@@ -19,10 +20,17 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         ViewNode<Parent, MainController> viewNode = MainController.create();
-        Scene scene = new Scene(viewNode.getNode(), 1024, 1024);
+        Scene scene = new Scene(viewNode.getNode(), 1100, 740);
+
         stage.titleProperty().bind(I18N.get("app.title"));
         stage.setScene(scene);
         stage.show();
+
+        // TODO - should be bound to light/dark mode
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add(MainApplication.class
+                .getResource("/theme/dark.css").toString());
+        Theme.setStylesheet("/theme/dark.css");
     }
 
     public static void main(String[] args) {
@@ -35,7 +43,6 @@ public class MainApplication extends Application {
         Logger.addLogAppender(LogAppender.stdout());
         I18N.setLocale(Locale.getDefault());
         Context.initialize(parameters);
-        // Application.setUserAgentStylesheet();
 
         launch();
     }
@@ -46,4 +53,5 @@ public class MainApplication extends Application {
         Context.destroy();
         Logger.stopAndWait();
     }
+
 }

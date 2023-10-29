@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      style="-fx-padding: 0 12 0 12"
+      prefHeight="48"
+      styleClass="directory-color"
+      fx:controller="com.onebytellc.imageviewer.ui.display.header.HeaderMode0ViewController">
+
+    <VBox alignment="CENTER">
+        <Slider focusTraversable="false" fx:id="scaleSlider" maxWidth="80" orientation="HORIZONTAL"></Slider>
+    </VBox>
+
+</HBox>

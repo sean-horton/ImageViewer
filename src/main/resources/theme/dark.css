@@ -1,0 +1,44 @@
+/* SPLIT PANE */
+.split-pane {
+    -fx-background-color: #212020;
+}
+
+.split-pane *.split-pane-divider {
+    -fx-padding: 0 1 0 0;
+    -fx-background-color: #3c3c3c;
+}
+
+/* SLIDER */
+.slider .track {
+    -fx-pref-height: 2;
+    -fx-background-color: #848484;
+}
+
+.slider .thumb {
+    -fx-pref-height: 14;
+    -fx-pref-width: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1.5;
+    -fx-background-color: #212020;
+    -fx-border-color: #848484;
+}
+
+/* TEXT COLORS */
+.textPrimary {
+    -fx-font-family: "SF Pro";
+    -fx-text-fill: #fff;
+}
+
+.textSecondary {
+    -fx-font-family: "SF Pro";
+    -fx-text-fill: #929c9c
+}
+
+/* CONTENT COLORS */
+.directory-color {
+    -fx-background-color: #272727
+}
+
+.button-blue {
+    -fx-text-fill: #479BEF;
+}

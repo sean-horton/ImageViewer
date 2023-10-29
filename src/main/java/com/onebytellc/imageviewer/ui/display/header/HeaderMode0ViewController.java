@@ -6,7 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
 
-public class HeaderViewController {
+public class HeaderMode0ViewController {
 
     @FXML
     private Slider scaleSlider;
