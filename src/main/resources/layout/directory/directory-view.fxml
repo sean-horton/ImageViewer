@@ -6,7 +6,6 @@
            styleClass="directory-color"
            fx:controller="com.onebytellc.imageviewer.ui.directory.DirectoryViewController">
 
-
     <fx:include source="directory-list-view.fxml" />
     <fx:include source="directory-toolbar-view.fxml" StackPane.alignment="TOP_CENTER"/>
 

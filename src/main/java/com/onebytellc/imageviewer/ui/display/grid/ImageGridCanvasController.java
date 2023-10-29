@@ -1,5 +1,6 @@
 package com.onebytellc.imageviewer.ui.display.grid;
 
+import com.onebytellc.imageviewer.Theme;
 import com.onebytellc.imageviewer.backend.ChangeSet;
 import com.onebytellc.imageviewer.backend.CollectionService;
 import com.onebytellc.imageviewer.backend.Context;
@@ -46,9 +47,10 @@ public class ImageGridCanvasController {
 
     @FXML
     private void initialize() {
+        gridLayer.backgroundColorProperty().bind(Theme.imageBackground());
+
         DisplayState state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
-
 
         Bindings.bindBidirectional(gridLayer.contentHeightProperty(), scrollBarLayer.contentHeightProperty());
         Bindings.bindBidirectional(gridLayer.contentOffsetProperty(), scrollBarLayer.contentOffsetProperty());
@@ -78,7 +80,7 @@ public class ImageGridCanvasController {
         canvasView.setOnKeyPressed(this::onKeyPress);
     }
 
-    private void openFullScreenImage(ImageHandle item, Bounds itemBounds){
+    private void openFullScreenImage(ImageHandle item, Bounds itemBounds) {
         List<CanvasLayer> newLayers = new ArrayList<>();
         newLayers.add(imageLayer);
 

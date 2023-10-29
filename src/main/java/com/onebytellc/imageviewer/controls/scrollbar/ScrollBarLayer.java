@@ -98,7 +98,7 @@ public class ScrollBarLayer extends CanvasLayer {
         getGraphics2D().strokeRect(xPos, scrollBarOffset + bubble, scrollBarWidth, scrollBarHeight);
         getGraphics2D().strokeArc(xPos, scrollBarOffset + scrollBarHeight, scrollBarWidth, scrollBarWidth, 180, 180, ArcType.OPEN);
 
-        getGraphics2D().setFill(new Color(1, 1, 1, 0.75));
+        getGraphics2D().setFill(new Color(0.9, 0.9, 0.9, 0.75));
         getGraphics2D().fillArc(xPos, scrollBarOffset, scrollBarWidth, scrollBarWidth, 0, 180, ArcType.CHORD);
         getGraphics2D().fillRect(xPos, scrollBarOffset + bubble, scrollBarWidth, scrollBarHeight);
         getGraphics2D().fillArc(xPos, scrollBarOffset + scrollBarHeight, scrollBarWidth, scrollBarWidth, 180, 180, ArcType.CHORD);

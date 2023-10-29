@@ -2,7 +2,9 @@ package com.onebytellc.imageviewer.controls.gridview;
 
 import com.onebytellc.imageviewer.controls.CanvasLayer;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -30,6 +32,7 @@ public class GridLayer<T> extends CanvasLayer {
     // Total height of content AND offset within total height
     private final DoubleProperty contentHeight = new SimpleDoubleProperty();
     private final DoubleProperty contentOffset = new SimpleDoubleProperty();
+    private final ObjectProperty<Color> backgroundColor = new SimpleObjectProperty<>();
 
     // state
     private final ObservableList<T> items = FXCollections.observableArrayList();
@@ -132,6 +135,10 @@ public class GridLayer<T> extends CanvasLayer {
         return contentOffset;
     }
 
+    public ObjectProperty<Color> backgroundColorProperty() {
+        return backgroundColor;
+    }
+
     public void setGridCellRenderer(GridCellRenderer<T> cellFactory) {
         this.gridCellRenderer = cellFactory;
     }
@@ -182,7 +189,7 @@ public class GridLayer<T> extends CanvasLayer {
 
         // clear the canvas for redraw
         getGraphics2D().clearRect(0, 0, getW(), getH());
-        getGraphics2D().setFill(Color.GRAY);
+        getGraphics2D().setFill(backgroundColor.get());
         getGraphics2D().fillRect(0, 0, getW(), getH());
 
         // draw each image

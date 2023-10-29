@@ -42,3 +42,8 @@
 .button-blue {
     -fx-text-fill: #479BEF;
 }
+
+.image-background {
+    -fx-text-fill: #1E1E1E;
+    -fx-background-color: #1E1E1E;
+}

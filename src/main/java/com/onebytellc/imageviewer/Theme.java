@@ -1,5 +1,6 @@
 package com.onebytellc.imageviewer;
 
+import com.onebytellc.imageviewer.logger.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.CssParser;
@@ -16,8 +17,11 @@ import java.net.URISyntaxException;
 
 public final class Theme {
 
+    private static final Logger LOG = Logger.getInstance(Theme.class);
+
     private static final ObjectProperty<Stylesheet> stylesheetProperty = new SimpleObjectProperty<>();
     private static final ObjectProperty<Color> buttonBlue = new SimpleObjectProperty<>();
+    private static final ObjectProperty<Color> imageBackground = new SimpleObjectProperty<>();
 
     private Theme() {
 
@@ -32,7 +36,9 @@ public final class Theme {
             System.exit(1);
         }
 
+        // NOTE: for some reason ColorConverter can't parse -fx-background-color
         buttonBlue.setValue(extract(".button-blue", "-fx-text-fill", ColorConverter.getInstance()));
+        imageBackground.setValue(extract(".image-background", "-fx-text-fill", ColorConverter.getInstance()));
     }
 
     private static <T> T extract(String selector, String decaration, StyleConverter converter) {
@@ -44,6 +50,7 @@ public final class Theme {
                     for (Declaration declaration : rule.getDeclarations()) {
                         if (declaration.getProperty().equals(decaration)) {
                             Object o = converter.convert(declaration.getParsedValue(), null);
+                            LOG.debug("Converted css style {} :: {} :: {}", selector, decaration, o);
                             return (T) o;
                         }
                     }
@@ -51,11 +58,16 @@ public final class Theme {
             }
         }
 
+        LOG.warn("Unable to find css {} :: {}", selector, decaration);
         return null;
     }
 
     public static ObjectProperty<Color> buttonBlue() {
         return buttonBlue;
+    }
+
+    public static ObjectProperty<Color> imageBackground() {
+        return imageBackground;
     }
 
 }

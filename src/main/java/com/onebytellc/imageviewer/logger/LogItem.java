@@ -42,7 +42,7 @@ class LogItem {
         int off = 0;
         while (i < format.length() - 1 && off < values.length) {
             if (format.charAt(i) == '{' && format.charAt(i + 1) == '}') {
-                sb.append(values[off]);
+                sb.append(values[off++]);
                 i++;
             } else {
                 sb.append(format.charAt(i));
