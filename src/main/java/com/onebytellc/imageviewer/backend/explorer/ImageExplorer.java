@@ -85,6 +85,13 @@ public class ImageExplorer implements Runnable {
         return directory.streamable.observe();
     }
 
+    public void reset() {
+        directories.forEach((s, directory) -> {
+            directory.subDirectories.forEach(sub -> sub.watchKey.cancel());
+        });
+        directories.clear();
+    }
+
     private void recursiveFetch(Directory directory, Path root, int depth) throws IOException {
         if (depth <= 0) {
             return;

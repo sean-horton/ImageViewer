@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS collection_path
     collection_id INTEGER,
     directory     TEXT,
     depth         INTEGER,
-    FOREIGN KEY (collection_id) REFERENCES collection (id)
+    CONSTRAINT fk_collection_id
+        FOREIGN KEY (collection_id) REFERENCES collection (id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS collection_path_collection_id_index ON collection_path (collection_id);
 
@@ -33,7 +34,8 @@ CREATE TABLE IF NOT EXISTS image
     filename         TEXT,
     im_original_date DATETIME,
     fs_modify_time   DATETIME,
-    FOREIGN KEY (directory_id) REFERENCES directory (id)
+    CONSTRAINT fk_directory_id
+        FOREIGN KEY (directory_id) REFERENCES directory (id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS image_directory_id_index ON image (directory_id);
 

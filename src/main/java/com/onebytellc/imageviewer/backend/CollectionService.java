@@ -5,6 +5,7 @@ import com.onebytellc.imageviewer.backend.cache.ImageIndexer;
 import com.onebytellc.imageviewer.backend.cache.PriorityThreadPool;
 import com.onebytellc.imageviewer.backend.db.Database;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.CollectionPathRecord;
+import com.onebytellc.imageviewer.backend.db.jooq.tables.records.CollectionRecord;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.DirectoryRecord;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebytellc.imageviewer.backend.explorer.ImageEvent;
@@ -13,7 +14,12 @@ import com.onebytellc.imageviewer.backend.image.ImageLoader;
 import com.onebytellc.imageviewer.logger.Logger;
 import com.onebytellc.imageviewer.reactive.Executor;
 import com.onebytellc.imageviewer.reactive.Observable;
+import com.onebytellc.imageviewer.reactive.Single;
 import com.onebytellc.imageviewer.reactive.Streamable;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,6 +51,9 @@ public class CollectionService {
     private final Streamable<ChangeSet<ImageHandle>> collectionImages;
     private final Streamable<Boolean> refreshRequest;
 
+    private final ObservableList<CollectionRecord> collections = FXCollections.observableArrayList();
+    private final ObjectProperty<CollectionRecord> collectionSelection = new SimpleObjectProperty<>();
+
     public CollectionService(Database database, ImageExplorer explorer, ImageIndexer indexer, ImageCache imageCache,
                              Streamable<ChangeSet<ImageHandle>> imageStreamable,
                              Streamable<Boolean> refreshRequest) {
@@ -56,27 +65,78 @@ public class CollectionService {
         this.collectionImages = imageStreamable;
         this.refreshRequest = refreshRequest;
 
-        // TODO - remove
-        explorer.register("/Users/shorton/imageviewtest", 10)
+        // TODO  - remove
+//        explorer.register("/Users/shorton/imageviewtest", 10)
+//                .observeOn(Executor.processThread())
+//                .subscribe(this::handleEvent);
+
+        collectionSelected().addListener((observable, oldValue, newValue) -> loadCollection(newValue));
+        refreshCollection();
+    }
+
+    private void loadCollection(CollectionRecord record) {
+        LOG.info("Loading collection {}: {}", record.getId(), record.getName());
+
+        // notify UI to clear
+        collectionImages.notify(new ChangeSet<>(true, null, null, null));
+
+        // start fetching
+        database.getPathsForCollection(record.getId())
                 .observeOn(Executor.processThread())
-                .subscribe(this::handleEvent);
+                .subscribe(items -> {
+                    explorer.reset();
+                    for (CollectionPathRecord path : items) {
+                        explorer.register(path.getDirectory(), path.getDepth())
+                                .observeOn(Executor.processThread())
+                                .subscribe(this::handleEvent);
+                    }
+                });
+    }
+
+    private void refreshCollection() {
+        database.getCollections()
+                .observeOn(Executor.fxApplicationThread())
+                .subscribe(items -> {
+                    collections.setAll(items.stream().toList());
+                    if (collectionSelection.get() == null && !collections.isEmpty()) {
+                        collectionSelection.setValue(collections.get(0));
+                    }
+                    if (collectionSelection.get() != null && !collections.isEmpty() && !collections.contains(collectionSelection.get())) {
+                        collectionSelection.setValue(collections.get(0));
+                    }
+                });
+    }
+
+    public void deleteCollection(int collectionId) {
+        LOG.info("Deleting collection {}", collectionId);
+        // TODO - this also needs to delete any dangling directories and images
+        //  and clean up the image cache
+        database.deleteCollection(collectionId)
+                .observeOn(Executor.processThread())
+                .subscribe((i) -> refreshCollection());
+    }
+
+    public ObservableList<CollectionRecord> collectionProperty() {
+        return collections;
+    }
+
+    public ObjectProperty<CollectionRecord> collectionSelected() {
+        return collectionSelection;
     }
 
     public Observable<Boolean> cacheUpdateStream() {
         return refreshRequest.observe();
     }
 
-    public void selectCollection(int collectionId) {
-        //activeCollection.clear();
-        Executor.processThread().run(() -> {
-            List<CollectionPathRecord> pathRecords = database.getPathsForCollection(collectionId);
-
-            for (CollectionPathRecord path : pathRecords) {
-                explorer.register(path.getDirectory(), path.getDepth())
-                        .observeOn(Executor.processThread())
-                        .subscribe(this::handleEvent);
-            }
-        });
+    public Observable<Boolean> addCollection(String name, int depth, String path) {
+        return new Single<Boolean>()
+                .subscribeOn(Executor.processThread())
+                .onSubscribe((emitter) -> {
+                    boolean res = database.addCollection(name, depth, path);
+                    emitter.notify(res);
+                    refreshCollection();
+                })
+                .observe();
     }
 
     /**
