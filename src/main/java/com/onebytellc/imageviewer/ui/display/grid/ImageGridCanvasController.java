@@ -44,6 +44,7 @@ public class ImageGridCanvasController {
     private Subscription cacheUpdateSub;
     private Subscription collectionImageSub;
     private ImageHandle viewingImage;
+    private ImageGridRenderer imageGridRenderer = new ImageGridRenderer();
 
     @FXML
     private void initialize() {
@@ -63,8 +64,14 @@ public class ImageGridCanvasController {
         gridLayer.baseImageSizeProperty().bind(state.gridBaseImageSizeProperty());
 
         // grid cell config
-        gridLayer.setGridCellRenderer(new ImageGridRenderer());
+        gridLayer.setGridCellRenderer(imageGridRenderer);
         gridLayer.setOnCellClicked(this::openFullScreenImage);
+
+        // change render mode
+        state.imageRenderModeProperty().addListener((observable, oldValue, newValue) -> {
+            imageGridRenderer.setRenderMode(newValue);
+            gridLayer.draw();
+        });
 
         // when the cache has a new item (maybe a higher res was read from disk)
         cacheUpdateSub = collectionService.cacheUpdateStream()

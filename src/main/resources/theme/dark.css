@@ -79,6 +79,10 @@
     -fx-text-fill: #479BEF;
 }
 
+.button-toolbar {
+    -fx-text-fill: #A0A0A0;
+}
+
 .image-background {
     -fx-text-fill: #1E1E1E;
     -fx-background-color: #1E1E1E;

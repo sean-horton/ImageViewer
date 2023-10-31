@@ -3,12 +3,25 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      style="-fx-padding: 0 12 0 12"
+      style="-fx-padding: 0 10 0 10"
+      spacing="2"
       prefHeight="48"
+      alignment="CENTER_LEFT"
       styleClass="directory-color"
       fx:controller="com.onebytellc.imageviewer.ui.display.header.HeaderMode0ViewController">
+
+    <Button fx:id="renderModeButton" style="-fx-background-color: transparent">
+        <graphic>
+            <ImageView fx:id="renderModeImage" preserveRatio="true" fitHeight="22" fitWidth="22">
+                <Image url="@../../../image/image-render-fit.png"/>
+            </ImageView>
+        </graphic>
+    </Button>
 
     <VBox alignment="CENTER">
         <Slider focusTraversable="false" fx:id="scaleSlider" maxWidth="80" orientation="HORIZONTAL"></Slider>

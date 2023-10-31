@@ -1,7 +1,10 @@
 package com.onebytellc.imageviewer.backend;
 
+import com.onebytellc.imageviewer.controls.gridview.ImageRenderMode;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class DisplayState {
 
@@ -10,12 +13,14 @@ public class DisplayState {
     private final DoubleProperty gridMinScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridMaxScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridImageScaleFactor = new SimpleDoubleProperty();
+    private final ObjectProperty<ImageRenderMode> imageRenderMode = new SimpleObjectProperty<>();
 
     public DisplayState() {
         gridBaseImageSize.setValue(50);
         gridMinScaleFactor.setValue(0.5);
         gridMaxScaleFactor.setValue(10);
         gridImageScaleFactor.setValue(1);
+        imageRenderMode.setValue(ImageRenderMode.FIT);
     }
 
     public DoubleProperty gridBaseImageSizeProperty() {
@@ -34,4 +39,7 @@ public class DisplayState {
         return gridImageScaleFactor;
     }
 
+    public ObjectProperty<ImageRenderMode> imageRenderModeProperty() {
+        return imageRenderMode;
+    }
 }
