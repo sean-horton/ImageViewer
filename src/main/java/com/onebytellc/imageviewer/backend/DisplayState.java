@@ -14,6 +14,7 @@ public class DisplayState {
     private final DoubleProperty gridMaxScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridImageScaleFactor = new SimpleDoubleProperty();
     private final ObjectProperty<ImageRenderMode> imageRenderMode = new SimpleObjectProperty<>();
+    private final ObjectProperty<ImageHandle> fullScreenImage = new SimpleObjectProperty<>();
 
     public DisplayState() {
         gridBaseImageSize.setValue(50);
@@ -41,5 +42,9 @@ public class DisplayState {
 
     public ObjectProperty<ImageRenderMode> imageRenderModeProperty() {
         return imageRenderMode;
+    }
+
+    public ObjectProperty<ImageHandle> fullScreenImageProperty() {
+        return fullScreenImage;
     }
 }

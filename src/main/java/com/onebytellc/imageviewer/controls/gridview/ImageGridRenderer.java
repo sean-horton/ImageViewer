@@ -51,14 +51,15 @@ public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
             }
         }
 
+        // TODO - macos has BAD clipping performance - disabling for now because it's terrible
         // save a non-clipped state
-        gfx.save();
-
-        // clip to draw bounds
-        gfx.beginPath();
-        gfx.rect(x + padding, y + padding, w - (padding * 2), h - (padding * 2));
-        gfx.closePath();
-        gfx.clip();
+//        gfx.save();
+//
+//        // clip to draw bounds
+//        gfx.beginPath();
+//        gfx.rect(x + padding, y + padding, w - (padding * 2), h - (padding * 2));
+//        gfx.closePath();
+//        gfx.clip();
 
         // draw the image
         gfx.drawImage(image,
@@ -68,7 +69,7 @@ public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
                 drawH - (padding * 2));
 
         // restore back to the non-clipped state
-        gfx.restore();
+//        gfx.restore();
     }
 
 }

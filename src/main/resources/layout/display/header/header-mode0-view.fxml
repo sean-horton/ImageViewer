@@ -15,7 +15,7 @@
       styleClass="directory-color"
       fx:controller="com.onebytellc.imageviewer.ui.display.header.HeaderMode0ViewController">
 
-    <Button fx:id="renderModeButton" style="-fx-background-color: transparent">
+    <Button fx:id="renderModeButton" styleClass="button-toolbar">
         <graphic>
             <ImageView fx:id="renderModeImage" preserveRatio="true" fitHeight="22" fitWidth="22">
                 <Image url="@../../../image/image-render-fit.png"/>

@@ -53,6 +53,10 @@ public class ImageGridCanvasController {
         DisplayState state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
 
+        // bind full screen to current displaying image
+        Bindings.bindBidirectional(state.fullScreenImageProperty(), imageLayer.imagePropertyProperty());
+
+        // property bindings
         Bindings.bindBidirectional(gridLayer.contentHeightProperty(), scrollBarLayer.contentHeightProperty());
         Bindings.bindBidirectional(gridLayer.contentOffsetProperty(), scrollBarLayer.contentOffsetProperty());
         canvasView.attach(gridLayer);
@@ -102,6 +106,13 @@ public class ImageGridCanvasController {
         }
     }
 
+    private void closeFullScreenImage() {
+        // TODO - start transition
+        imageLayer.imagePropertyProperty().set(null);
+        canvasView.detach(imageLayer);
+        viewingImage = null;
+    }
+
     private void prefetchFullSizeImages(int i) {
         gridLayer.getItems().get(i).getImage(Integer.MAX_VALUE, Integer.MAX_VALUE);
         if (i + 1 < gridLayer.getItems().size()) {
@@ -120,9 +131,7 @@ public class ImageGridCanvasController {
         switch (event.getCode()) {
             case ESCAPE -> {
                 event.consume();
-                // TODO - start transition
-                canvasView.detach(imageLayer);
-                viewingImage = null;
+                closeFullScreenImage();
             }
             case SPACE -> {
                 event.consume();

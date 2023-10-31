@@ -1,18 +1,26 @@
 package com.onebytellc.imageviewer.ui.display.header;
 
+import com.onebytellc.imageviewer.MainApplication;
 import com.onebytellc.imageviewer.Theme;
+import com.onebytellc.imageviewer.ViewNode;
 import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.DisplayState;
 import com.onebytellc.imageviewer.controls.gridview.ImageRenderMode;
 import com.onebytellc.imageviewer.logger.Logger;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.IOException;
 
+/**
+ * Shown when the image grid view is displaying
+ */
 public class HeaderMode0ViewController {
 
     private static final Logger LOG = Logger.getInstance(HeaderMode0ViewController.class);
@@ -27,6 +35,16 @@ public class HeaderMode0ViewController {
     @FXML
     private ImageView renderModeImage;
 
+    public static ViewNode<Node, HeaderMode0ViewController> create() {
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class
+                .getResource("/layout/display/header/header-mode0-view.fxml"));
+        try {
+            return new ViewNode<>(fxmlLoader.load(), fxmlLoader.getController());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load HeaderMode0ViewController", e);
+        }
+    }
+
     @FXML
     private void initialize() {
         Context context = Context.getInstance();
@@ -40,7 +58,7 @@ public class HeaderMode0ViewController {
         // render mode button
         state.imageRenderModeProperty().addListener((observable, oldValue, newValue) -> configureImageRenderImage());
         configureImageRenderImage();
-        renderModeButton.effectProperty().bind(Theme.buttonToolbarEffect());
+        renderModeImage.effectProperty().bind(Theme.buttonToolbarEffect());
         renderModeButton.setOnAction(e -> {
             ImageRenderMode mode = state.imageRenderModeProperty().get();
             state.imageRenderModeProperty().setValue(mode == ImageRenderMode.FIT ? ImageRenderMode.FULL : ImageRenderMode.FIT);

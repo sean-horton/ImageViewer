@@ -80,6 +80,13 @@
 }
 
 .button-toolbar {
+    -fx-background-color: transparent;
+    -fx-text-fill: #A0A0A0;
+    -fx-padding: 4;
+}
+
+.button-toolbar:hover {
+    -fx-background-color: #414141;
     -fx-text-fill: #A0A0A0;
 }
 
