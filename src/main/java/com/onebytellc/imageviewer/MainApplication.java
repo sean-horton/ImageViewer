@@ -34,12 +34,23 @@ public class MainApplication extends Application {
     }
 
     public static void main(String[] args) {
-        // TODO - this path should be in %APP_DATA% dir
+        String os = System.getProperty("os.name").toLowerCase();
+        String appDataPath;
+        if (os.contains("mac")) {
+            appDataPath = System.getProperty("user.home") + "/Library/Application Support/";
+        } else if (os.contains("win")) {
+            appDataPath = System.getenv("AppData") + "/";
+        } else {
+            appDataPath = System.getProperty("user.home") + "/."; // dot for hidden on linux
+        }
+        appDataPath += "com.onebyte_llc.imageviewer";
+
         ContextParameters parameters = new ContextParameters.Builder()
-                .setAppDataPath(Path.of("/Users/shorton/imageviewdata/"))
+                .setAppDataPath(Path.of(appDataPath))
                 .build();
 
         // set some startup items
+        Logger.setLevel(LogLevel.TRACE);
         Logger.addLogAppender(LogAppender.stdout());
         I18N.setLocale(Locale.getDefault());
         Context.initialize(parameters);

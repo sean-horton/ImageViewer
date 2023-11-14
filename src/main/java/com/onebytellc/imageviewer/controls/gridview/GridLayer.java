@@ -16,7 +16,10 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -168,6 +171,7 @@ public class GridLayer<T> extends CanvasLayer {
         // limit scroll bounds
         int columns = (int) (w / sizeW);
         contentHeight.setValue(Math.ceil((items.size() / (double) columns)) * sizeH);
+        int totalCellCount = (int) (Math.ceil(getH() / sizeH) * columns);
 
         int minScroll = (int) (-contentHeight.get() + h);
         if (contentHeight.get() <= h) {
@@ -193,6 +197,8 @@ public class GridLayer<T> extends CanvasLayer {
         getGraphics2D().fillRect(0, 0, getW(), getH());
 
         // draw each image
+        LocalDateTime min = null;
+        LocalDateTime max = null;
         for (int i = 0; i < items.size(); i++) {
             // TODO - if there are millions of items it would be faster to use
             //  binary search to find first row that needs to be painted
@@ -208,20 +214,48 @@ public class GridLayer<T> extends CanvasLayer {
                     getGraphics2D().setFill(Color.RED);
                     getGraphics2D().fillRect(finalOffX, finalOffY, sizeW, sizeH);
                 }));
-                gridCellRenderer.draw(items.get(i), getGraphics2D(), offX, offY, sizeW, sizeH);
+                gridCellRenderer.draw(items.get(i), getGraphics2D(), totalCellCount, offX, offY, sizeW, sizeH);
+            }
+
+            LocalDateTime nextDate = gridCellRenderer.getDate(items.get(i));
+            if (min == null || (nextDate != null && nextDate.isBefore(min))) {
+                min = nextDate;
+            }
+            if (max == null || (nextDate != null && nextDate.isAfter(max))) {
+                max = nextDate;
             }
 
             offX += sizeW;
             if (offX + sizeW > w) {
                 offX = 0;
+
+                // draw text
+                if (min != null) {
+                    // TODO - this probably should be done in a separate layer
+                    //   and it should only draw text every few rows
+                    final String msg = min.getYear() + "-" + max.getYear();
+                    final Text text = new Text(msg);
+                    Font font = Font.font("SF Pro", FontWeight.BOLD, 24);
+                    text.setFont(font);
+                    final double textW = text.getLayoutBounds().getWidth();
+                    final double textH = text.getLayoutBounds().getHeight();
+
+                    getGraphics2D().setFill(Color.rgb(33, 33, 33, 0.5));
+                    getGraphics2D().fillRoundRect(25 - 3, offY + 32 - textH + 6, textW + 6, textH, 8, 8);
+
+                    getGraphics2D().setFill(Color.WHITE);
+                    getGraphics2D().setFont(font);
+                    getGraphics2D().fillText(msg, 25, offY + 32);
+
+                    min = null;
+                    max = null;
+                }
+
                 offY += sizeH;
             }
         }
 
-        // draw text
-        getGraphics2D().setFill(Color.BLACK);
-        getGraphics2D().setFont(Font.font(100));
-        getGraphics2D().fillText("test 123", 150, this.contentOffset.get() + 150);
+
     }
 
     private double[] calcSize(double w, double h) {

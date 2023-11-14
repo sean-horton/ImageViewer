@@ -1,5 +1,6 @@
 package com.onebytellc.imageviewer.ui.directory;
 
+import com.onebytellc.imageviewer.I18N;
 import com.onebytellc.imageviewer.Theme;
 import com.onebytellc.imageviewer.backend.CollectionService;
 import com.onebytellc.imageviewer.backend.Context;
@@ -8,6 +9,9 @@ import com.onebytellc.imageviewer.reactive.Executor;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.stage.DirectoryChooser;
+
+import java.io.File;
 
 
 public class DirectoryToolbarController {
@@ -25,7 +29,14 @@ public class DirectoryToolbarController {
 
         addButton.effectProperty().bind(Theme.buttonBlueEffect());
         addButton.setOnAction(event -> {
-            collectionService.addCollection("SomeOther", 10, "/Users/shorton/imageviewtest")
+            String defaultCollectionName = I18N.get("default.new.collection.name").get();
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            File selectedDirectory = directoryChooser.showDialog(addButton.getScene().getWindow());
+            if (selectedDirectory == null) {
+                return;
+            }
+
+            collectionService.addCollection(defaultCollectionName, 10, selectedDirectory.getAbsolutePath())
                     .observeOn(Executor.fxApplicationThread())
                     .subscribe(res -> {
                         LOG.info("Added new collection '{}', success: {}", "name", res);

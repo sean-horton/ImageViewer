@@ -6,7 +6,6 @@
       fx:controller="com.onebytellc.imageviewer.ui.display.DisplayViewController">
 
     <VBox fx:id="toolbarVbox">
-        <fx:include source="header/header-mode0-view.fxml"/>
     </VBox>
 
     <!--    <fx:include VBox.vgrow="ALWAYS" source="grid/image-grid.fxml"/>-->

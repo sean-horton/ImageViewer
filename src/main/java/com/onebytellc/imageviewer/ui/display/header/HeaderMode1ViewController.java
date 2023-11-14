@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class HeaderMode1ViewController {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("LLLL d, yyyy 'at' h:m:s a");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("LLLL d, yyyy 'at' h:mm:ss a");
 
     @FXML
     private Slider scaleSlider;
@@ -35,14 +35,11 @@ public class HeaderMode1ViewController {
     @FXML
     private ImageView backButtonImage;
 
-    public static ViewNode<Node, HeaderMode1ViewController> create(ImageHandle imageHandle) {
+    public static ViewNode<Node, HeaderMode1ViewController> create() {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class
                 .getResource("/layout/display/header/header-mode1-view.fxml"));
         try {
-            Node node = fxmlLoader.load();
-            HeaderMode1ViewController controller = fxmlLoader.getController();
-            controller.init(imageHandle);
-            return new ViewNode<>(node, controller);
+            return new ViewNode<>(fxmlLoader.load(), fxmlLoader.getController());
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load HeaderMode1ViewController", e);
         }
@@ -54,10 +51,11 @@ public class HeaderMode1ViewController {
         DisplayState state = Context.getInstance().getDisplayState();
         backButtonImage.effectProperty().bind(Theme.buttonToolbarEffect());
         backButton.setOnAction(event -> state.fullScreenImageProperty().setValue(null));
+        state.fullScreenImageProperty().addListener((observable, oldValue, newValue) -> setImageHandle(newValue));
     }
 
-    private void init(ImageHandle imageHandle) {
-        if (imageHandle.getImOriginalDate() == null) {
+    public void setImageHandle(ImageHandle imageHandle) {
+        if (imageHandle == null || imageHandle.getImOriginalDate() == null) {
             timeLabel.setText("N/A");
         } else {
             timeLabel.setText(imageHandle.getImOriginalDate().format(FORMATTER));

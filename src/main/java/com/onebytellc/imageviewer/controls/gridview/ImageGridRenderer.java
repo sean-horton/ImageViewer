@@ -4,6 +4,8 @@ import com.onebytellc.imageviewer.backend.ImageHandle;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
+import java.time.LocalDateTime;
+
 public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
 
     private ImageRenderMode renderMode = ImageRenderMode.FIT;
@@ -18,58 +20,72 @@ public class ImageGridRenderer implements GridCellRenderer<ImageHandle> {
     }
 
     @Override
-    public void draw(ImageHandle handle, GraphicsContext gfx, double x, double y, double w, double h) {
-        Image image = handle.getImage(w, h);
+    public void draw(ImageHandle handle, GraphicsContext gfx, int totalCellCount, double x, double y, double w, double h) {
+        // TODO - This is a hacky/hardcoded way to get a SMALL, MEDIUM, and LARGE sized image.
+        //   It should probably be an enum, but I changed how it worked later on and I'm lazy atm
+        int s = totalCellCount == 1 ? Integer.MAX_VALUE : totalCellCount <= 100 ? 350 : 32;
+        Image image = handle.getImage(s, s);
         if (image == null) {
             return;
         }
 
-        double drawW = image.getWidth();
-        double drawH = image.getHeight();
+        double drawW = 0;
+        double drawH = 0;
 
-        double ratio = w / drawW;
-        drawW *= ratio;
-        drawH *= ratio;
+        double srcX = 0;
+        double srcY = 0;
+        double srcW = image.getWidth();
+        double srcH = image.getHeight();
 
         if (renderMode == ImageRenderMode.FIT) {
+            drawW = image.getWidth();
+            drawH = image.getHeight();
+
+            double ratio = w / drawW;
+            drawW *= ratio;
+            drawH *= ratio;
+
             if (drawH > h) {
                 ratio = h / drawH;
                 drawW *= ratio;
                 drawH *= ratio;
             }
+
+            x = x + ((w - drawW) / 2);
+            y = y + ((h - drawH) / 2);
         } else if (renderMode == ImageRenderMode.FULL) {
-            if (drawH < h) {
-                ratio = h / drawH;
-                drawW *= ratio;
-                drawH *= ratio;
-            }
-            if (h > drawH) {
-                y -= (h - drawH) / 2;
-            }
-            if (w > drawW) {
-                x -= (w - drawW) / 2;
+            drawW = w;
+            drawH = h;
+
+            if (w / h > image.getWidth() / image.getHeight()) {
+                double ratio = w / image.getWidth();
+                double targetH = image.getHeight() * ratio;
+                ratio = h / targetH;
+                srcH = image.getHeight() * ratio;
+                srcY = (image.getHeight() - srcH) / 2;
+            } else {
+                double ratio = h / image.getHeight();
+                double targetW = image.getWidth() * ratio;
+                ratio = w / targetW;
+                srcW = image.getWidth() * ratio;
+                srcX = (image.getWidth() - srcW) / 2;
             }
         }
 
-        // TODO - macos has BAD clipping performance - disabling for now because it's terrible
-        // save a non-clipped state
-//        gfx.save();
-//
-//        // clip to draw bounds
-//        gfx.beginPath();
-//        gfx.rect(x + padding, y + padding, w - (padding * 2), h - (padding * 2));
-//        gfx.closePath();
-//        gfx.clip();
-
         // draw the image
         gfx.drawImage(image,
-                x + ((w - drawW) / 2) + padding,
-                y + ((h - drawH) / 2) + padding,
+                srcX,
+                srcY,
+                srcW,
+                srcH,
+                x + padding,
+                y + padding,
                 drawW - (padding * 2),
                 drawH - (padding * 2));
-
-        // restore back to the non-clipped state
-//        gfx.restore();
     }
 
+    @Override
+    public LocalDateTime getDate(ImageHandle imageHandle) {
+        return imageHandle.getImOriginalDate();
+    }
 }

@@ -49,7 +49,8 @@ public class ImageIndexer {
                         Path cachePath, Database database, Streamable<ChangeSet<ImageHandle>> refreshRequest,
                         PriorityThreadPool threadPool) {
 
-        this.definitions = definitions;
+        this.definitions = new ArrayList<>(definitions);
+        this.definitions.sort((o1, o2) -> Integer.compare(o2.getW() * o2.getH(), o1.getW() * o1.getH()));
         this.imageLoaders = imageLoaders;
         this.cachePath = cachePath;
         this.database = database;
@@ -108,6 +109,9 @@ public class ImageIndexer {
                 }
 
                 // write indexed images to disk
+                // TODO - maybe we can improve performance by scaling the largest definition
+                //   then scaling that image to the next largest, and so on, that way we
+                //   aren't always scaling the full size image, we are incrementally downscaling
                 for (ImageCacheDefinition cacheDefinition : definitions) {
                     String name = cacheDefinition.getFileName(record.getId() + "");
                     Path path = cachePath.resolve(name);

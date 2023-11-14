@@ -33,6 +33,20 @@ public class ImageLayer extends CanvasLayer {
         });
     }
 
+    private double[] drawSize(Image image) {
+        double w = image.getWidth();
+        double h = image.getHeight();
+        double ratio = getW() / w;
+        w *= ratio;
+        h *= ratio;
+        if (h > getH()) {
+            ratio = getH() / h;
+            w *= ratio;
+            h *= ratio;
+        }
+        return new double[]{w * zoomScale.get(), h * zoomScale.get()};
+    }
+
     /////////////////////
     // Properties
     public ObjectProperty<ImageHandle> imagePropertyProperty() {
@@ -72,8 +86,39 @@ public class ImageLayer extends CanvasLayer {
 
     @Override
     protected void onScroll(ScrollEvent event) {
-        offsetX.setValue(offsetX.get() + event.getDeltaX());
-        offsetY.setValue(offsetY.get() + event.getDeltaY());
+        ImageHandle handle = imageProperty.getValue();
+        if (handle == null) {
+            return;
+        }
+        Image image = handle.getImage(getW(), getH());
+
+        // set the new position based on deltas
+        double newX = offsetX.get() + event.getDeltaX();
+        double newY = offsetY.get() + event.getDeltaY();
+
+        // get draw image size
+        double[] size = drawSize(image);
+        double w = size[0];
+        double h = size[1];
+
+        // TODO - this needs to be improved
+        // sanitize image drag bounds
+        if (newX + w < getW()) {
+            newX = getW() - w;
+        }
+        if (newX > 0) {
+            newX = 0;
+        }
+        if (newY + h < getH()) {
+            newY = getH() - h;
+        }
+        if (newY > 0) {
+            newY = 0;
+        }
+
+        // set the values
+        offsetX.setValue(newX);
+        offsetY.setValue(newY);
         event.consume();
     }
 
@@ -119,6 +164,7 @@ public class ImageLayer extends CanvasLayer {
         y += getY();
 
         GraphicsContext ctx = getGraphics2D();
+        ctx.clearRect(0, 0, getW(), getH()); // improves performance?
         ctx.drawImage(image, x, y, w * zoomScale.get(), h * zoomScale.get());
     }
 

@@ -55,6 +55,11 @@ public class ImageGridCanvasController {
 
         // bind full screen to current displaying image
         Bindings.bindBidirectional(state.fullScreenImageProperty(), imageLayer.imagePropertyProperty());
+        state.fullScreenImageProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null) {
+                canvasView.detach(imageLayer);
+            }
+        });
 
         // property bindings
         Bindings.bindBidirectional(gridLayer.contentHeightProperty(), scrollBarLayer.contentHeightProperty());

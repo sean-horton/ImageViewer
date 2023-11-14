@@ -70,6 +70,14 @@
     -fx-text-fill: #929c9c
 }
 
+.text-field {
+    -fx-background-color: transparent;
+    -fx-font-family: "SF Pro";
+    -fx-text-fill: #fff;
+    -fx-border-color: #479BEF;
+    -fx-border-radius: 4;
+}
+
 /* CONTENT COLORS */
 .directory-color {
     -fx-background-color: #272727

@@ -45,8 +45,8 @@ public final class Context {
         this.displayState = new DisplayState();
 
         // size definitions (indexer and cache share sizes, but cache also has full size)
-        ImageCacheDefinition cacheSmall = new ImageCacheDefinition(64, 64, 3000);
-        ImageCacheDefinition cacheMedium = new ImageCacheDefinition(500, 500, 100);
+        ImageCacheDefinition cacheSmall = new ImageCacheDefinition(64, 64, 4000);
+        ImageCacheDefinition cacheMedium = new ImageCacheDefinition(500, 500, 200);
         ImageCacheDefinition cacheFull = new ImageCacheDefinition(Integer.MAX_VALUE, Integer.MAX_VALUE, 5);
 
         // Streamable for notifying cache has updated

@@ -59,7 +59,7 @@ public class Database {
                 ctx.execute(s);
             }
 
-            LOG.info("Opened database successfully");
+            LOG.info("Opened database successfully: " + saveDirectory);
             return ctx;
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -99,6 +99,16 @@ public class Database {
                 .returning()
                 .fetchOne();
         return pathRecord != null;
+    }
+
+    public Observable<Boolean> updateCollection(CollectionRecord record) {
+        return new Single<Boolean>()
+                .subscribeOn(Executor.processThread())
+                .onSubscribe(emitter -> {
+                    record.update();
+                    emitter.notify(true);
+                })
+                .observe();
     }
 
     public Observable<Boolean> deleteCollection(int collectionId) {

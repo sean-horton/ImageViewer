@@ -2,11 +2,14 @@
 
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <HBox xmlns="http://javafx.com/javafx"
       alignment="CENTER_LEFT"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.onebytellc.imageviewer.ui.directory.CollectionCellController">
 
     <Label fx:id="label" style="-fx-padding: 0 0 0 22" styleClass="textPrimary" />
+    <TextField fx:id="renameTextField" managed="false" visible="false"
+               style="-fx-padding: 4 4 4 22" HBox.hgrow="ALWAYS" focusTraversable="false"/>
 
 </HBox>

@@ -1,9 +1,9 @@
 package com.onebytellc.imageviewer.ui.directory;
 
+import com.onebytellc.imageviewer.I18N;
 import com.onebytellc.imageviewer.ViewNode;
 import com.onebytellc.imageviewer.backend.Context;
 import com.onebytellc.imageviewer.backend.db.jooq.tables.records.CollectionRecord;
-import javafx.beans.binding.Bindings;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
@@ -26,7 +26,7 @@ public class DirectoryCell extends ListCell<CollectionRecord> {
             return;
         }
 
-        view.getController().setValue(item.getName());
+        view.getController().setValue(item);
         setGraphic(view.getNode());
         configureRightClick();
     }
@@ -35,13 +35,11 @@ public class DirectoryCell extends ListCell<CollectionRecord> {
         ContextMenu contextMenu = new ContextMenu();
 
         MenuItem editItem = new MenuItem();
-        editItem.textProperty().bind(Bindings.format("Edit"));
-        editItem.setOnAction(event -> {
-
-        });
+        editItem.textProperty().bind(I18N.get("rename"));
+        editItem.setOnAction(event -> view.getController().renameMode());
 
         MenuItem deleteItem = new MenuItem();
-        deleteItem.textProperty().bind(Bindings.format("Delete"));
+        deleteItem.textProperty().bind(I18N.get("delete"));
         deleteItem.setOnAction(event -> Context.getInstance().getCollectionService().deleteCollection(getItem().getId()));
 
         contextMenu.getItems().add(editItem);

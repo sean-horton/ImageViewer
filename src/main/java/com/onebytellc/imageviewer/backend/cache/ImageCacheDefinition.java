@@ -31,6 +31,7 @@ public class ImageCacheDefinition {
         return maxCacheSize;
     }
 
+    // TODO - rotate cache directories based on file count?
     public String getFileName(String name) {
         return name + "_" + w + "x" + h + ".jpg";
     }

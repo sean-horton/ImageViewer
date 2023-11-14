@@ -46,6 +46,12 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
+
+def runtimeJvmArgs = ['-Xmx500m', '-Xms500m']
+run {
+    jvmArgs = runtimeJvmArgs
+}
+
 dependencies {
     implementation("org.controlsfx:controlsfx:11.1.2")
     implementation("org.xerial:sqlite-jdbc:3.43.2.1")

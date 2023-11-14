@@ -65,11 +65,6 @@ public class CollectionService {
         this.collectionImages = imageStreamable;
         this.refreshRequest = refreshRequest;
 
-        // TODO  - remove
-//        explorer.register("/Users/shorton/imageviewtest", 10)
-//                .observeOn(Executor.processThread())
-//                .subscribe(this::handleEvent);
-
         collectionSelected().addListener((observable, oldValue, newValue) -> loadCollection(newValue));
         refreshCollection();
     }
@@ -114,6 +109,11 @@ public class CollectionService {
         database.deleteCollection(collectionId)
                 .observeOn(Executor.processThread())
                 .subscribe((i) -> refreshCollection());
+    }
+
+    public void updateCollection(CollectionRecord record) {
+        database.updateCollection(record)
+                .subscribe(e -> refreshCollection());
     }
 
     public ObservableList<CollectionRecord> collectionProperty() {
