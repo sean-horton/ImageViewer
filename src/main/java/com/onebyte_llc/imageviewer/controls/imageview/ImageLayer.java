@@ -18,6 +18,7 @@ public class ImageLayer extends CanvasLayer {
     private final ObjectProperty<ImageHandle> imageProperty = new SimpleObjectProperty<>();
 
     private final DoubleProperty zoomScale = new SimpleDoubleProperty(1);
+    private final DoubleProperty minZoomScale = new SimpleDoubleProperty(1);
     private final DoubleProperty maxZoomScale = new SimpleDoubleProperty(5);
     private final DoubleProperty offsetX = new SimpleDoubleProperty();
     private final DoubleProperty offsetY = new SimpleDoubleProperty();
@@ -31,6 +32,7 @@ public class ImageLayer extends CanvasLayer {
             zoomScale.setValue(1);
             invalidate();
         });
+        zoomScale.addListener((observable, oldValue, newValue) -> draw());
     }
 
     private double[] drawSize(Image image) {
@@ -53,10 +55,17 @@ public class ImageLayer extends CanvasLayer {
         return imageProperty;
     }
 
+    public DoubleProperty minZoomScaleProperty() {
+        return minZoomScale;
+    }
+
     public DoubleProperty maxZoomScaleProperty() {
         return maxZoomScale;
     }
 
+    public DoubleProperty zoomScaleProperty() {
+        return zoomScale;
+    }
 
     /////////////////////
     // User Action
@@ -68,7 +77,7 @@ public class ImageLayer extends CanvasLayer {
     @Override
     protected void onZoom(ZoomEvent event) {
         double newZoom = zoomScale.getValue() * event.getZoomFactor();
-        newZoom = Math.min(Math.max(1, newZoom), maxZoomScale.get());
+        newZoom = Math.min(Math.max(minZoomScale.get(), newZoom), maxZoomScale.get());
         zoomScale.set(newZoom);
         event.consume();
     }
@@ -126,6 +135,7 @@ public class ImageLayer extends CanvasLayer {
     protected void onScrollFinished(ScrollEvent event) {
         event.consume();
     }
+
 
     /////////////////////
     // Render

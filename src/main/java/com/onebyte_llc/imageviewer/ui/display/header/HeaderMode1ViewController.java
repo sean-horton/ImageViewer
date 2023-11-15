@@ -6,6 +6,7 @@ import com.onebyte_llc.imageviewer.ViewNode;
 import com.onebyte_llc.imageviewer.backend.Context;
 import com.onebyte_llc.imageviewer.backend.DisplayState;
 import com.onebyte_llc.imageviewer.backend.ImageHandle;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -52,10 +53,18 @@ public class HeaderMode1ViewController {
         backButtonImage.effectProperty().bind(Theme.buttonToolbarEffect());
         backButton.setOnAction(event -> state.fullScreenImageProperty().setValue(null));
         state.fullScreenImageProperty().addListener((observable, oldValue, newValue) -> setImageHandle(newValue));
+
+        Bindings.bindBidirectional(scaleSlider.valueProperty(), state.fullScreenScaleFactorProperty());
+        scaleSlider.minProperty().bind(state.fullScreeMinScaleFactorProperty());
+        scaleSlider.maxProperty().bind(state.fullScreeMaxScaleFactorProperty());
     }
 
     public void setImageHandle(ImageHandle imageHandle) {
-        if (imageHandle == null || imageHandle.getImOriginalDate() == null) {
+        if (imageHandle == null) {
+            return;
+        }
+
+        if (imageHandle.getImOriginalDate() == null) {
             timeLabel.setText("N/A");
         } else {
             timeLabel.setText(imageHandle.getImOriginalDate().format(FORMATTER));

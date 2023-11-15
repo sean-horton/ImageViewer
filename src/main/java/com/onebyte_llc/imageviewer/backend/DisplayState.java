@@ -13,6 +13,11 @@ public class DisplayState {
     private final DoubleProperty gridMinScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridMaxScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridImageScaleFactor = new SimpleDoubleProperty();
+
+    private final DoubleProperty fullScreenScaleFactor = new SimpleDoubleProperty(1);
+    private final DoubleProperty fullScreeMinScaleFactor = new SimpleDoubleProperty(1);
+    private final DoubleProperty fullScreeMaxScaleFactor = new SimpleDoubleProperty(5);
+
     private final ObjectProperty<ImageRenderMode> imageRenderMode = new SimpleObjectProperty<>();
     private final ObjectProperty<ImageHandle> fullScreenImage = new SimpleObjectProperty<>();
 
@@ -46,5 +51,17 @@ public class DisplayState {
 
     public ObjectProperty<ImageHandle> fullScreenImageProperty() {
         return fullScreenImage;
+    }
+
+    public DoubleProperty fullScreenScaleFactorProperty() {
+        return fullScreenScaleFactor;
+    }
+
+    public DoubleProperty fullScreeMinScaleFactorProperty() {
+        return fullScreeMinScaleFactor;
+    }
+
+    public DoubleProperty fullScreeMaxScaleFactorProperty() {
+        return fullScreeMaxScaleFactor;
     }
 }

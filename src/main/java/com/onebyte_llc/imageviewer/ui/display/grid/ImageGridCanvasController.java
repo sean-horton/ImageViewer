@@ -82,6 +82,11 @@ public class ImageGridCanvasController {
             gridLayer.draw();
         });
 
+        // full screen image scale binding
+        Bindings.bindBidirectional(imageLayer.zoomScaleProperty(), state.fullScreenScaleFactorProperty());
+        imageLayer.minZoomScaleProperty().bind(state.fullScreeMinScaleFactorProperty());
+        imageLayer.maxZoomScaleProperty().bind(state.fullScreeMaxScaleFactorProperty());
+
         // when the cache has a new item (maybe a higher res was read from disk)
         cacheUpdateSub = collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
@@ -97,6 +102,9 @@ public class ImageGridCanvasController {
     }
 
     private void openFullScreenImage(ImageHandle item, Bounds itemBounds) {
+        DisplayState state = Context.getInstance().getDisplayState();
+        state.fullScreenScaleFactorProperty().set(1);
+
         List<CanvasLayer> newLayers = new ArrayList<>();
         newLayers.add(imageLayer);
 
