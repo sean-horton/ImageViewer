@@ -57,7 +57,7 @@ public class ImageGridCanvasController {
         Bindings.bindBidirectional(state.fullScreenImageProperty(), imageLayer.imagePropertyProperty());
         state.fullScreenImageProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {
-                canvasView.detach(imageLayer);
+                closeFullScreenImage();
             }
         });
 
@@ -100,7 +100,10 @@ public class ImageGridCanvasController {
         List<CanvasLayer> newLayers = new ArrayList<>();
         newLayers.add(imageLayer);
 
-        canvasView.playTransition(new TransitionZoomExpand(itemBounds, new ArrayList<>(), newLayers), TimeUnit.MILLISECONDS, 250); // imageLayer
+        List<CanvasLayer> oldLayers = new ArrayList<>();
+        oldLayers.add(gridLayer);
+
+        canvasView.playTransition(new TransitionZoomExpand(itemBounds, oldLayers, newLayers), TimeUnit.MILLISECONDS, 250); // imageLayer
         imageLayer.imagePropertyProperty().set(item);
         viewingImage = item;
         for (int i = 0; i < gridLayer.getItems().size(); i++) {
@@ -115,6 +118,8 @@ public class ImageGridCanvasController {
         // TODO - start transition
         imageLayer.imagePropertyProperty().set(null);
         canvasView.detach(imageLayer);
+        canvasView.attach(gridLayer);
+        canvasView.invalidate();
         viewingImage = null;
     }
 
@@ -176,6 +181,7 @@ public class ImageGridCanvasController {
     private void handeEvent(ChangeSet<ImageHandle> change) {
         if (change.isReset()) {
             gridLayer.getItems().clear();
+            closeFullScreenImage();
         }
 
         // remove items

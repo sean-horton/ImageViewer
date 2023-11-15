@@ -1,14 +1,15 @@
 package com.onebyte_llc.imageviewer;
 
+import com.onebyte_llc.imageviewer.backend.Context;
 import com.onebyte_llc.imageviewer.backend.ContextParameters;
 import com.onebyte_llc.imageviewer.logger.LogAppender;
 import com.onebyte_llc.imageviewer.logger.LogLevel;
-import com.onebyte_llc.imageviewer.ui.MainController;
-import com.onebyte_llc.imageviewer.backend.Context;
 import com.onebyte_llc.imageviewer.logger.Logger;
+import com.onebyte_llc.imageviewer.ui.MainController;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class MainApplication extends Application {
 
         stage.titleProperty().bind(I18N.get("app.title"));
         stage.setScene(scene);
+        Image appIcon = new Image(getClass().getResource("/image/branding/app-icon.png").toString());
+        stage.getIcons().add(appIcon);
         stage.show();
 
         // TODO - should be bound to light/dark mode
