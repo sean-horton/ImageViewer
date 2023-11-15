@@ -1,4 +1,5 @@
-import groovy.xml.MarkupBuilder
+import org.jooq.codegen.GenerationTool
+import org.gradle.internal.os.OperatingSystem;
 
 buildscript {
     repositories {
@@ -36,6 +37,7 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+version = passedAppVersion
 application {
     mainModule = 'com.onebyte_llc.imageviewer'
     mainClass = 'com.onebyte_llc.imageviewer.MainApplication'
@@ -70,7 +72,22 @@ jlink {
     imageZip = project.file("${buildDir}/distributions/app-${javafx.platform.classifier}.zip")
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
-        name = 'app'
+        name = 'ImageViewer'
+    }
+    jpackage {
+        imageName = 'ImageViewer'
+        jvmArgs = runtimeJvmArgs
+        installerType = 'app-image'
+
+        def iconPath = 'src/main/resources/image/branding/'
+        if (OperatingSystem.current().isMacOsX()) {
+            iconPath += 'app-icon.icns'
+        } else if (OperatingSystem.current().isWindows()) {
+            iconPath += 'app-icon.ico'
+        } else {
+            iconPath += 'app-icon.png'
+        }
+        icon = iconPath
     }
 }
 
@@ -78,7 +95,7 @@ jlinkZip {
     group = 'distribution'
 }
 
-import org.jooq.codegen.GenerationTool
+
 import org.jooq.meta.jaxb.*
 
 tasks.register('generateJooqBindings') {
