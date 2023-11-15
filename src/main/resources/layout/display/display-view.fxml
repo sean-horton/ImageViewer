@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.onebytellc.imageviewer.ui.display.DisplayViewController">
+      fx:controller="com.onebyte_llc.imageviewer.ui.display.DisplayViewController">
 
     <VBox fx:id="toolbarVbox">
     </VBox>

@@ -6,7 +6,7 @@
 <HBox xmlns="http://javafx.com/javafx"
       alignment="CENTER_LEFT"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.onebytellc.imageviewer.ui.directory.CollectionCellController">
+      fx:controller="com.onebyte_llc.imageviewer.ui.directory.CollectionCellController">
 
     <Label fx:id="label" style="-fx-padding: 0 0 0 22" styleClass="textPrimary" />
     <TextField fx:id="renameTextField" managed="false" visible="false"

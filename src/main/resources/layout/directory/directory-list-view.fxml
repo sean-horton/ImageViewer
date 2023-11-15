@@ -6,6 +6,6 @@
           xmlns:fx="http://javafx.com/fxml"
           style="-fx-padding: 56 0 0 0"
           styleClass="directory-color"
-          fx:controller="com.onebytellc.imageviewer.ui.directory.DirectoryListViewController">
+          fx:controller="com.onebyte_llc.imageviewer.ui.directory.DirectoryListViewController">
 
 </ListView>

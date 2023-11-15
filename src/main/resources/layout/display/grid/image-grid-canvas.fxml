@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.onebytellc.imageviewer.controls.CanvasView?>
+<?import com.onebyte_llc.imageviewer.controls.CanvasView?>
 <CanvasView xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:id="canvasView"
-            fx:controller="com.onebytellc.imageviewer.ui.display.grid.ImageGridCanvasController">
+            fx:controller="com.onebyte_llc.imageviewer.ui.display.grid.ImageGridCanvasController">
 
 </CanvasView>

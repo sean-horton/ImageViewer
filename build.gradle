@@ -37,8 +37,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-    mainModule = 'com.onebytellc.imageviewer'
-    mainClass = 'com.onebytellc.imageviewer.MainApplication'
+    mainModule = 'com.onebyte_llc.imageviewer'
+    mainClass = 'com.onebyte_llc.imageviewer.MainApplication'
 }
 
 javafx {
@@ -86,7 +86,7 @@ tasks.register('generateJooqBindings') {
         GenerationTool.generate(new Configuration()
                 .withJdbc(new Jdbc()
                         .withDriver('org.sqlite.JDBC')
-                        .withUrl('jdbc:sqlite:/Users/shorton/imageviewtest/db/imageview.db')
+                        .withUrl('jdbc:sqlite:/Users/shorton/Library/Application Support/com.onebyte_llc.imageviewer/imageview.db')
                         .withUser('')
                         .withPassword(''))
                 .withGenerator(new Generator()
@@ -95,39 +95,7 @@ tasks.register('generateJooqBindings') {
                                 .withPojos(true)
                                 .withDaos(true))
                         .withTarget(new Target()
-                                .withPackageName('com.onebytellc.imageviewer.backend.db.jooq')
+                                .withPackageName('com.onebyte_llc.imageviewer.backend.db.jooq')
                                 .withDirectory(buildDir.absolutePath + '/../src/main/java'))))
     }
 }
-
-//generationTool {
-//
-//    // Configure the database connection here
-//    jdbc {
-//        driver = 'org.sqlite.JDBC'
-//        url = 'jdbc:sqlite:/Users/shorton/imageviewtest/db/imageview.db'
-//        user = ''
-//        password = ''
-//    }
-//    generator {
-//        database {
-//            name = 'org.jooq.meta.sqlite.SQLiteDatabase'
-//        }
-//
-//        // Generation flags: See advanced configuration properties
-//        generate {}
-//        target {
-//
-//            // The destination package of your generated classes (within the
-//            // destination directory)
-//            //
-//            // jOOQ may append the schema name to this package if generating multiple schemas,
-//            // e.g. org.jooq.your.packagename.schema1
-//            // org.jooq.your.packagename.schema2
-//            packageName = 'com.onebytellc.imageviewer.backed.db'
-//
-//            // The destination directory of your generated classes
-////            directory = '/path/to/your/dir'
-//        }
-//    }
-//}

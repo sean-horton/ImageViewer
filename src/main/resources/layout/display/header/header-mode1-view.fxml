@@ -14,7 +14,7 @@
       spacing="2"
       alignment="CENTER_LEFT"
       styleClass="directory-color"
-      fx:controller="com.onebytellc.imageviewer.ui.display.header.HeaderMode1ViewController">
+      fx:controller="com.onebyte_llc.imageviewer.ui.display.header.HeaderMode1ViewController">
 
     <Button fx:id="backButton" styleClass="button-toolbar">
         <graphic>

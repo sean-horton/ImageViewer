@@ -7,7 +7,7 @@
            xmlns:fx="http://javafx.com/fxml"
            style="-fx-background-color: black"
            fx:id="stackPane"
-           fx:controller="com.onebytellc.imageviewer.ui.display.ImageViewController">
+           fx:controller="com.onebyte_llc.imageviewer.ui.display.ImageViewController">
 
     <ImageView fx:id="imageView" preserveRatio="true">
     </ImageView>
