@@ -55,6 +55,12 @@ public abstract class CanvasLayer {
     protected void onKeyPressed(KeyEvent event) {
     }
 
+    protected void onMouseMoved(MouseEvent event) {
+    }
+
+    protected void onMouseExited(MouseEvent event) {
+    }
+
     protected void onMouseClicked(MouseEvent event) {
     }
 

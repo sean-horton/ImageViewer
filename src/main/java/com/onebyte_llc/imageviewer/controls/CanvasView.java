@@ -55,6 +55,8 @@ public class CanvasView extends AnchorPane {
         canvas.setOnZoomFinished(event -> handleEvent(event, (layer) -> layer.onZoomFinished(event)));
 
         // click listener
+        canvas.setOnMouseExited(event -> handleEvent(event, (layer -> layer.onMouseExited(event))));
+        canvas.setOnMouseMoved(event -> handleEvent(event, (layer) -> layer.onMouseMoved(event)));
         canvas.setOnMouseClicked(event -> handleEvent(event, (layer) -> layer.onMouseClicked(event)));
         canvas.setOnMousePressed(event -> handleEvent(event, (layer) -> layer.onMousePressed(event)));
         canvas.setOnMouseReleased(event -> handleEvent(event, (layer) -> layer.onMouseReleased(event)));

@@ -7,6 +7,7 @@ import com.onebyte_llc.imageviewer.backend.DisplayState;
 import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.controls.CanvasLayer;
 import com.onebyte_llc.imageviewer.controls.CanvasView;
+import com.onebyte_llc.imageviewer.controls.LeftRightControlsLayer;
 import com.onebyte_llc.imageviewer.controls.TransitionZoomExpand;
 import com.onebyte_llc.imageviewer.controls.gridview.GridLayer;
 import com.onebyte_llc.imageviewer.controls.gridview.ImageGridRenderer;
@@ -18,6 +19,7 @@ import com.onebyte_llc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayList;
@@ -35,9 +37,11 @@ public class ImageGridCanvasController {
 
     @FXML
     private CanvasView canvasView;
+
     private GridLayer<ImageHandle> gridLayer = new GridLayer<>();
     private ScrollBarLayer scrollBarLayer = new ScrollBarLayer();
     private ImageLayer imageLayer = new ImageLayer();
+    private LeftRightControlsLayer leftRightControlLayer = new LeftRightControlsLayer();
 
 
     private Subscription cacheUpdateSub;
@@ -57,6 +61,13 @@ public class ImageGridCanvasController {
         collectionService.cacheUpdateStream()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(b -> canvasView.invalidate());
+        collectionService.collectionImageRecords()
+                .observeOn(Executor.fxApplicationThread())
+                .subscribe(c -> {
+                    if (c.isReset()) {
+                        closeFullScreenImage();
+                    }
+                });
 
         // bind full screen to current displaying image
         Bindings.bindBidirectional(state.fullScreenImageProperty(), imageLayer.imagePropertyProperty());
@@ -94,6 +105,14 @@ public class ImageGridCanvasController {
 
         // keyboard press (example, move to next full screen image)
         canvasView.setOnKeyPressed(this::onKeyPress);
+
+        // left / right click listeners
+        leftRightControlLayer.setOnLeft(this::prevImage);
+        leftRightControlLayer.setOnRight(this::nextImage);
+        leftRightControlLayer.setLeftImage(new Image(getClass().getResource("/image/back-button.png").toString()));
+        leftRightControlLayer.setRightImage(new Image(getClass().getResource("/image/forward-button.png").toString()));
+        state.fullScreenScaleFactorProperty().addListener((observable, oldValue, newValue) ->
+                leftRightControlLayer.setEnabled(newValue.doubleValue() == 1));
     }
 
     private void openFullScreenImage(ImageHandle item, Bounds itemBounds) {
@@ -102,6 +121,7 @@ public class ImageGridCanvasController {
 
         List<CanvasLayer> newLayers = new ArrayList<>();
         newLayers.add(imageLayer);
+        newLayers.add(leftRightControlLayer);
 
         List<CanvasLayer> oldLayers = new ArrayList<>();
         oldLayers.add(gridLayer);
@@ -121,6 +141,8 @@ public class ImageGridCanvasController {
         // TODO - start transition
         imageLayer.imagePropertyProperty().set(null);
         canvasView.detach(imageLayer);
+        canvasView.detach(leftRightControlLayer);
+
         canvasView.attach(gridLayer);
         canvasView.invalidate();
         viewingImage = null;
@@ -152,31 +174,39 @@ public class ImageGridCanvasController {
             }
             case RIGHT, UP -> { // next
                 event.consume();
-                for (int i = 0; i < gridLayer.getItems().size(); i++) {
-                    ImageHandle handle = gridLayer.getItems().get(i);
-                    if (viewingImage == handle) {
-                        if (i + 1 < gridLayer.getItems().size()) {
-                            imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i + 1));
-                            viewingImage = imageLayer.imagePropertyProperty().get();
-                            prefetchFullSizeImages(i + 1);
-                        }
-                        break;
-                    }
-                }
+                nextImage();
             }
             case LEFT, DOWN -> { // prev
                 event.consume();
-                for (int i = 0; i < gridLayer.getItems().size(); i++) {
-                    ImageHandle handle = gridLayer.getItems().get(i);
-                    if (viewingImage == handle) {
-                        if (i - 1 >= 0) {
-                            imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i - 1));
-                            viewingImage = imageLayer.imagePropertyProperty().get();
-                            prefetchFullSizeImages(i - 1);
-                        }
-                        break;
-                    }
+                prevImage();
+            }
+        }
+    }
+
+    private void nextImage() {
+        for (int i = 0; i < gridLayer.getItems().size(); i++) {
+            ImageHandle handle = gridLayer.getItems().get(i);
+            if (viewingImage == handle) {
+                if (i + 1 < gridLayer.getItems().size()) {
+                    imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i + 1));
+                    viewingImage = imageLayer.imagePropertyProperty().get();
+                    prefetchFullSizeImages(i + 1);
                 }
+                break;
+            }
+        }
+    }
+
+    private void prevImage() {
+        for (int i = 0; i < gridLayer.getItems().size(); i++) {
+            ImageHandle handle = gridLayer.getItems().get(i);
+            if (viewingImage == handle) {
+                if (i - 1 >= 0) {
+                    imageLayer.imagePropertyProperty().set(gridLayer.getItems().get(i - 1));
+                    viewingImage = imageLayer.imagePropertyProperty().get();
+                    prefetchFullSizeImages(i - 1);
+                }
+                break;
             }
         }
     }
