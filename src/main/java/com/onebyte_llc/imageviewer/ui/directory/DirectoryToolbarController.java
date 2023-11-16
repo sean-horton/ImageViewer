@@ -1,6 +1,5 @@
 package com.onebyte_llc.imageviewer.ui.directory;
 
-import com.onebyte_llc.imageviewer.I18N;
 import com.onebyte_llc.imageviewer.Theme;
 import com.onebyte_llc.imageviewer.backend.CollectionService;
 import com.onebyte_llc.imageviewer.backend.Context;
@@ -29,14 +28,13 @@ public class DirectoryToolbarController {
 
         addButton.effectProperty().bind(Theme.buttonBlueEffect());
         addButton.setOnAction(event -> {
-            String defaultCollectionName = I18N.get("default.new.collection.name").get();
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory = directoryChooser.showDialog(addButton.getScene().getWindow());
             if (selectedDirectory == null) {
                 return;
             }
 
-            collectionService.addCollection(defaultCollectionName, 10, selectedDirectory.getAbsolutePath())
+            collectionService.addCollection(selectedDirectory.getName(), 10, selectedDirectory.getAbsolutePath())
                     .observeOn(Executor.fxApplicationThread())
                     .subscribe(res -> {
                         LOG.info("Added new collection '{}', success: {}", "name", res);
