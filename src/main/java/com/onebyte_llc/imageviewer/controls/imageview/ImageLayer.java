@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
 
@@ -22,6 +23,11 @@ public class ImageLayer extends CanvasLayer {
     private final DoubleProperty maxZoomScale = new SimpleDoubleProperty(5);
     private final DoubleProperty offsetX = new SimpleDoubleProperty();
     private final DoubleProperty offsetY = new SimpleDoubleProperty();
+
+    // drag event state
+    private MouseEvent startDragEvent;
+    private double startDragOffsetX;
+    private double startDragOffsetY;
 
 
     public ImageLayer() {
@@ -95,15 +101,56 @@ public class ImageLayer extends CanvasLayer {
 
     @Override
     protected void onScroll(ScrollEvent event) {
+
+
+        // set the new position based on deltas
+        double newX = offsetX.get() + event.getDeltaX();
+        double newY = offsetY.get() + event.getDeltaY();
+
+        setOffset(newX, newY);
+        event.consume();
+    }
+
+    @Override
+    protected void onScrollFinished(ScrollEvent event) {
+        event.consume();
+    }
+
+
+    /////////////////
+    // Dragging
+    @Override
+    protected void onMousePressed(MouseEvent event) {
+        startDragOffsetX = offsetX.get();
+        startDragOffsetY = offsetY.get();
+        startDragEvent = event;
+        event.consume();
+    }
+
+    @Override
+    protected void onMouseDragged(MouseEvent event) {
+        if (startDragEvent == null) {
+            return;
+        }
+
+        double newX = startDragOffsetX + ((event.getX() - startDragEvent.getX()) * zoomScale.get());
+        double newY = startDragOffsetY + ((event.getY() - startDragEvent.getY()) * zoomScale.get());
+
+        setOffset(newX, newY);
+        event.consume();
+    }
+
+    @Override
+    protected void onMouseReleased(MouseEvent event) {
+        event.consume();
+    }
+
+    private void setOffset(double newX, double newY) {
         ImageHandle handle = imageProperty.getValue();
         if (handle == null) {
             return;
         }
         Image image = handle.getImage(getW(), getH());
-
-        // set the new position based on deltas
-        double newX = offsetX.get() + event.getDeltaX();
-        double newY = offsetY.get() + event.getDeltaY();
 
         // get draw image size
         double[] size = drawSize(image);
@@ -128,12 +175,6 @@ public class ImageLayer extends CanvasLayer {
         // set the values
         offsetX.setValue(newX);
         offsetY.setValue(newY);
-        event.consume();
-    }
-
-    @Override
-    protected void onScrollFinished(ScrollEvent event) {
-        event.consume();
     }
 
 
