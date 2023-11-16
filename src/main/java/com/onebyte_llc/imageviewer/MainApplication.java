@@ -42,7 +42,7 @@ public class MainApplication extends Application {
         if (os.contains("mac")) {
             appDataPath = System.getProperty("user.home") + "/Library/Application Support/";
         } else if (os.contains("win")) {
-            appDataPath = System.getenv("AppData") + "/";
+            appDataPath = System.getProperty("user.home") + "\\AppData\\Local\\";
         } else {
             appDataPath = System.getProperty("user.home") + "/."; // dot for hidden on linux
         }
