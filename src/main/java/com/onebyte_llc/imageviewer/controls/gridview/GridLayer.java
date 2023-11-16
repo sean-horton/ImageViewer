@@ -38,8 +38,8 @@ public class GridLayer<T> extends CanvasLayer {
     private final ObjectProperty<Color> backgroundColor = new SimpleObjectProperty<>();
 
     // state
-    private final ObservableList<T> items = FXCollections.observableArrayList();
     private final List<DisplayBounds<T>> cellBounds = new ArrayList<>();
+    private ObservableList<T> items = FXCollections.observableArrayList();
     private GridCellRenderer<T> gridCellRenderer;
     private GridCellClickedListener<T> gridCellClickedListener;
 
@@ -112,6 +112,11 @@ public class GridLayer<T> extends CanvasLayer {
     // Properties
     public ObservableList<T> getItems() {
         return items;
+    }
+
+    public void setItems(ObservableList<T> list) {
+        items = list;
+        items.addListener((ListChangeListener<T>) c -> invalidate());
     }
 
     public DoubleProperty baseImageSizeProperty() {

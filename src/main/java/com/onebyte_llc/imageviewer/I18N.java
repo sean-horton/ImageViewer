@@ -34,12 +34,12 @@ public class I18N {
         }
     }
 
-    public static StringBinding get(String key) {
+    public static StringBinding get(String key, Object... args) {
         StringBinding sb = new StringBinding() {
             @Override
             protected String computeValue() {
                 try {
-                    return BUNDLE.getString(key);
+                    return BUNDLE.getString(key).formatted(args);
                 } catch (Exception e) {
                     return "NO_TRANSLATION";
                 }

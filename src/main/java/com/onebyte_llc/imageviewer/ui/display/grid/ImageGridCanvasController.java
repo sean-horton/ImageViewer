@@ -1,11 +1,10 @@
 package com.onebyte_llc.imageviewer.ui.display.grid;
 
-import com.onebyte_llc.imageviewer.backend.DisplayState;
-import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.Theme;
-import com.onebyte_llc.imageviewer.backend.ChangeSet;
 import com.onebyte_llc.imageviewer.backend.CollectionService;
 import com.onebyte_llc.imageviewer.backend.Context;
+import com.onebyte_llc.imageviewer.backend.DisplayState;
+import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.controls.CanvasLayer;
 import com.onebyte_llc.imageviewer.controls.CanvasView;
 import com.onebyte_llc.imageviewer.controls.TransitionZoomExpand;
@@ -48,10 +47,16 @@ public class ImageGridCanvasController {
 
     @FXML
     private void initialize() {
-        gridLayer.backgroundColorProperty().bind(Theme.imageBackground());
-
         DisplayState state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
+
+        gridLayer.backgroundColorProperty().bind(Theme.imageBackground());
+
+        // image grid bindings
+        gridLayer.setItems(collectionService.getCollectionImages());
+        collectionService.cacheUpdateStream()
+                .observeOn(Executor.fxApplicationThread())
+                .subscribe(b -> canvasView.invalidate());
 
         // bind full screen to current displaying image
         Bindings.bindBidirectional(state.fullScreenImageProperty(), imageLayer.imagePropertyProperty());
@@ -86,16 +91,6 @@ public class ImageGridCanvasController {
         Bindings.bindBidirectional(imageLayer.zoomScaleProperty(), state.fullScreenScaleFactorProperty());
         imageLayer.minZoomScaleProperty().bind(state.fullScreeMinScaleFactorProperty());
         imageLayer.maxZoomScaleProperty().bind(state.fullScreeMaxScaleFactorProperty());
-
-        // when the cache has a new item (maybe a higher res was read from disk)
-        cacheUpdateSub = collectionService.cacheUpdateStream()
-                .observeOn(Executor.fxApplicationThread())
-                .subscribe(b -> canvasView.invalidate());
-
-        // Items have changed (added/updated/removed)
-        collectionImageSub = collectionService.collectionImageRecords()
-                .observeOn(Executor.fxApplicationThread())
-                .subscribe(this::handeEvent);
 
         // keyboard press (example, move to next full screen image)
         canvasView.setOnKeyPressed(this::onKeyPress);
@@ -184,50 +179,6 @@ public class ImageGridCanvasController {
                 }
             }
         }
-    }
-
-    private void handeEvent(ChangeSet<ImageHandle> change) {
-        if (change.isReset()) {
-            gridLayer.getItems().clear();
-            closeFullScreenImage();
-        }
-
-        // remove items
-        for (ImageHandle removed : change.getRemoved()) {
-            gridLayer.getItems().removeIf(item -> item.getId() == removed.getId());
-        }
-
-        // update items
-        for (ImageHandle updated : change.getUpdated()) {
-            // TODO - this could be improved by using binary search on
-            //  imOriginalDate, and if it is null, binary search on name
-            //  in the 'null' sorted area. NOTE: in order to do this,
-            //  the updated records list needs to contain the old item + new item,
-            //  because we need to search for the old item as imOriginalDate may
-            //  be updating from null to a date OR from an old date to a new date
-            //    - OR we could just use a map as a lookup table
-            for (int i = 0; i < gridLayer.getItems().size(); i++) {
-                if (updated.getId() == gridLayer.getItems().get(i).getId()) {
-                    gridLayer.getItems().set(i, updated);
-                    break;
-                }
-            }
-        }
-
-        // add items
-        gridLayer.getItems().addAll(change.getAdded());
-
-        // sort items
-        gridLayer.getItems().sort((o1, o2) -> {
-            if (o1.getImOriginalDate() == null && o2.getImOriginalDate() == null) {
-                return o1.getFileName().compareTo(o2.getFileName());
-            } else if (o1.getImOriginalDate() == null) {
-                return -1;
-            } else if (o2.getImOriginalDate() == null) {
-                return 1;
-            }
-            return o1.getImOriginalDate().compareTo(o2.getImOriginalDate());
-        });
     }
 
 }

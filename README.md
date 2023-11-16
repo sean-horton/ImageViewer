@@ -17,8 +17,7 @@ following directory structure.
 
 ### Performance
 
-When adding new directories, especially directories with lots
-of images, indexing will occur on ALL images and may use a
+When adding new directories, especially directories with many images, indexing will occur on ALL images and may use a
 significant amount of CPU. Once indexing is completed subsequent
 loads of the application are fast.
 

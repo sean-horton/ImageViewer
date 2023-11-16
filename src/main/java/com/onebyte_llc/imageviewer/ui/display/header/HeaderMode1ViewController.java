@@ -1,5 +1,6 @@
 package com.onebyte_llc.imageviewer.ui.display.header;
 
+import com.onebyte_llc.imageviewer.I18N;
 import com.onebyte_llc.imageviewer.MainApplication;
 import com.onebyte_llc.imageviewer.Theme;
 import com.onebyte_llc.imageviewer.ViewNode;
@@ -17,6 +18,7 @@ import javafx.scene.image.ImageView;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Shown when an image is selected and in full screen
@@ -64,9 +66,27 @@ public class HeaderMode1ViewController {
             return;
         }
 
-        if (imageHandle.getImOriginalDate() == null) {
-            timeLabel.setText("N/A");
+        List<ImageHandle> imageHandles = Context.getInstance().getCollectionService().getCollectionImages();
+        int num = -1;
+        for (int i = 0; i < imageHandles.size(); i++) {
+            ImageHandle handle = imageHandles.get(i);
+            if (handle == imageHandle) {
+                num = i + 1;
+                break;
+            }
+        }
+
+        if (num >= 0) {
+            posLabel.textProperty().bind(I18N.get("image.num.of.num", num, imageHandles.size()));
         } else {
+            posLabel.textProperty().unbind();
+            posLabel.setText("");
+        }
+
+        if (imageHandle.getImOriginalDate() == null) {
+            timeLabel.textProperty().bind(I18N.get("image.no.date"));
+        } else {
+            timeLabel.textProperty().unbind();
             timeLabel.setText(imageHandle.getImOriginalDate().format(FORMATTER));
         }
     }
