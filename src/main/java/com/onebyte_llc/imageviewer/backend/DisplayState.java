@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 public class DisplayState {
 
-    // Image size is calculated from (DEFAULT_IMAGE_SIZE * scaleFactor)
+    // Image size is calculated from (gridBaseImageSize * scaleFactor)
     private final DoubleProperty gridBaseImageSize = new SimpleDoubleProperty();
     private final DoubleProperty gridMinScaleFactor = new SimpleDoubleProperty();
     private final DoubleProperty gridMaxScaleFactor = new SimpleDoubleProperty();
