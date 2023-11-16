@@ -73,8 +73,9 @@ public class ImageLayer extends CanvasLayer {
         return zoomScale;
     }
 
+
     /////////////////////
-    // User Action
+    // pinch to zoom
     @Override
     protected void onZoomStarted(ZoomEvent event) {
         event.consume();
@@ -85,6 +86,10 @@ public class ImageLayer extends CanvasLayer {
         double newZoom = zoomScale.getValue() * event.getZoomFactor();
         newZoom = Math.min(Math.max(minZoomScale.get(), newZoom), maxZoomScale.get());
         zoomScale.set(newZoom);
+
+        // make sure image is within bounds
+        setOffset(offsetX.get() * event.getZoomFactor(), offsetY.get() * event.getZoomFactor());
+
         event.consume();
     }
 
@@ -94,6 +99,8 @@ public class ImageLayer extends CanvasLayer {
     }
 
 
+    /////////////////////////
+    // scroll to move around
     @Override
     protected void onScrollStarted(ScrollEvent event) {
         event.consume();
@@ -133,8 +140,8 @@ public class ImageLayer extends CanvasLayer {
             return;
         }
 
-        double newX = startDragOffsetX + ((event.getX() - startDragEvent.getX()) * zoomScale.get());
-        double newY = startDragOffsetY + ((event.getY() - startDragEvent.getY()) * zoomScale.get());
+        double newX = startDragOffsetX + ((event.getX() - startDragEvent.getX()));
+        double newY = startDragOffsetY + ((event.getY() - startDragEvent.getY()));
 
         setOffset(newX, newY);
         event.consume();
@@ -206,17 +213,19 @@ public class ImageLayer extends CanvasLayer {
             h *= ratio;
         }
 
-        double x = (getW() - w) / 2; // center image
+        w *= zoomScale.get();
+        h *= zoomScale.get();
+        double x = getW() > w ? (getW() - w) / 2 : 0; // center image
         x += offsetX.get(); // scroll position
         x += getX();
 
-        double y = (getH() - h) / 2; // center the image
+        double y = getH() > h ? (getH() - h) / 2 : 0; // center the image
         y += offsetY.get(); // scroll position
         y += getY();
 
         GraphicsContext ctx = getGraphics2D();
         ctx.clearRect(0, 0, getW(), getH()); // improves performance?
-        ctx.drawImage(image, x, y, w * zoomScale.get(), h * zoomScale.get());
+        ctx.drawImage(image, x, y, w, h);
     }
 
 }
