@@ -49,7 +49,7 @@ javafx {
 }
 
 
-def runtimeJvmArgs = ['-Xmx500m', '-Xms500m']
+def runtimeJvmArgs = [] // '-Xmx500m', '-Xms500m'
 run {
     jvmArgs = runtimeJvmArgs
 }

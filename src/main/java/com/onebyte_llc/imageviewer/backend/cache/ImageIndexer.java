@@ -1,11 +1,11 @@
 package com.onebyte_llc.imageviewer.backend.cache;
 
-import com.onebyte_llc.imageviewer.backend.ImageHandle;
-import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
-import com.onebyte_llc.imageviewer.backend.image.ImageLoader;
 import com.onebyte_llc.imageviewer.backend.ChangeSet;
+import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.backend.db.Database;
+import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebyte_llc.imageviewer.backend.image.ImageData;
+import com.onebyte_llc.imageviewer.backend.image.ImageLoader;
 import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
@@ -138,8 +138,10 @@ public class ImageIndexer {
                     record.store();
 
                     // send an update event
+                    // loader.getPath().getParent() is used because an ImageHandle wants the dir of the image record
+                    // not the path of the actual image.
                     List<ImageHandle> handles = new ArrayList<>(1);
-                    handles.add(new ImageHandle(imageCache, loader.getPath(), record));
+                    handles.add(new ImageHandle(imageCache, loader.getPath().getParent(), record));
                     refreshRequest.notify(new ChangeSet<>(false, null, handles, null));
                 }
             } catch (IOException e) {
@@ -153,7 +155,7 @@ public class ImageIndexer {
     }
 
     private ImageData indexImage(ImageRecord record, ImageData data,
-                            ImageCacheDefinition cacheDefinition) throws IOException {
+                                 ImageCacheDefinition cacheDefinition) throws IOException {
 
         LOG.debug("Indexing image {}", record.getId());
 
@@ -173,6 +175,9 @@ public class ImageIndexer {
             h *= ratio;
         }
 
+        // TODO - it would be good if we could read and builld the down sampled
+        //  image without putting the original iin a BufferedImage  to save RAM.
+        //  decode and progressively down sample an input stream
         BufferedImage resizedImage = new BufferedImage((int) w, (int) h, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = resizedImage.createGraphics();
         graphics2D.drawImage(data.getImage(), 0, 0, (int) w, (int) h, null);

@@ -50,6 +50,13 @@ public abstract class CanvasLayer {
         return bounds == null ? 0 : bounds.getMinY();
     }
 
+
+    //////////////////////////////
+    // Callbacks
+    protected void onDetached() {
+    }
+
+
     //////////////////////////////
     // User Action (to override)
     protected void onKeyPressed(KeyEvent event) {

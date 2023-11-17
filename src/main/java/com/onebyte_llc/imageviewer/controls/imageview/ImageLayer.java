@@ -29,6 +29,10 @@ public class ImageLayer extends CanvasLayer {
     private double startDragOffsetX;
     private double startDragOffsetY;
 
+    // This keeps an image reference to the drawing image
+    // in case an underlying weak reference is used in cache
+    private Image mostRecentImageHandle;
+
 
     public ImageLayer() {
         imageProperty.addListener((observable, oldValue, newValue) -> {
@@ -53,6 +57,11 @@ public class ImageLayer extends CanvasLayer {
             h *= ratio;
         }
         return new double[]{w * zoomScale.get(), h * zoomScale.get()};
+    }
+
+    @Override
+    protected void onDetached() {
+        mostRecentImageHandle = null;
     }
 
     /////////////////////
@@ -198,6 +207,8 @@ public class ImageLayer extends CanvasLayer {
         if (image == null) {
             return;
         }
+
+        mostRecentImageHandle = image;
 
         // resize
         double w = image.getWidth();

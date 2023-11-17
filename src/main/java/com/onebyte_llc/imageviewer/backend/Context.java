@@ -8,6 +8,7 @@ import com.onebyte_llc.imageviewer.backend.db.Database;
 import com.onebyte_llc.imageviewer.backend.explorer.ImageExplorer;
 import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebyte_llc.imageviewer.backend.image.JpegImageTypeDefinition;
+import com.onebyte_llc.imageviewer.backend.image.PngImageTypeDefinition;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
 
@@ -31,7 +32,7 @@ public final class Context {
 
     private Context(ContextParameters parameters) {
         // thread pool
-        this.threadPool = new PriorityThreadPool("ImageCache", 10);
+        this.threadPool = new PriorityThreadPool("ImageCache", 6);
 
         // database
         this.database = new Database(Database.initialize(parameters.getDatabaseDir()));
@@ -39,6 +40,7 @@ public final class Context {
         // searches for images in image collections
         List<ImageTypeDefinition> loaders = new ArrayList<>();
         loaders.add(new JpegImageTypeDefinition());
+        loaders.add(new PngImageTypeDefinition());
         this.imageExplorer = new ImageExplorer(loaders);
 
         // ui state

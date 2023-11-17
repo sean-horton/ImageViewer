@@ -21,7 +21,7 @@ When adding new directories, especially directories with many images, indexing w
 significant amount of CPU. Once indexing is completed subsequent
 loads of the application are fast.
 
-The app is a memory hog even though `-Xmx500m` is supplied for
+The app is a memory hog even if `-Xmx500m` is supplied for
 max heap space. Memory usage could likely be improved by reducing
 in memory image cache sizes, however the cache needs to be 
 large enough to hold all on screen images, which can be up to 

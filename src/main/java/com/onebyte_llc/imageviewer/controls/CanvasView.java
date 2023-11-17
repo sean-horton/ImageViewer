@@ -99,7 +99,9 @@ public class CanvasView extends AnchorPane {
     }
 
     public void detach(CanvasLayer layer) {
-        layers.remove(layer);
+        if (layers.remove(layer)) {
+            layer.onDetached();
+        }
         invalidate();
     }
 
