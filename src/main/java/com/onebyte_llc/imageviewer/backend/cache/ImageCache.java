@@ -6,8 +6,10 @@ import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
 import javafx.scene.image.Image;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,9 +57,9 @@ public class ImageCache {
         }
 
         // 1. is image in our cache, yes? return it
-        Image image = toUse.cache.get(imageRecord.getId());
-        if (image != null) {
-            return image;
+        ImageCacheItem item = toUse.cache.get(imageRecord.getId());
+        if (item != null) {
+            return item.get();
         }
 
         // If we made it this far we have to fetch from disk
@@ -91,8 +93,7 @@ public class ImageCache {
             // load actual file
             LOG.debug("Loading full size image");
             String fileName = record.getFilename();
-            Image image1 = new Image(new FileInputStream(srcDir.resolve(fileName).toString()));
-            cacheDef.cache.put(record.getId(), image1);
+            cacheDef.cache.put(record.getId(), new FullScreenCache(Files.readAllBytes(srcDir.resolve(fileName))));
             refreshRequest.notify(true);
         } else {
             String fileName = cacheDef.def.getFileName(record.getId() + "");
@@ -100,7 +101,12 @@ public class ImageCache {
 
             if (Files.exists(path)) {
                 Image image1 = new Image(new FileInputStream(path.toString()));
-                cacheDef.cache.put(record.getId(), image1);
+                if (image1.isError()) {
+                    LOG.error("Image failed to load: {}", image1.exceptionProperty().get());
+                    refreshRequest.notify(true);
+                    return;
+                }
+                cacheDef.cache.put(record.getId(), new IndexImageCache(image1));
                 refreshRequest.notify(true);
                 return;
             }
@@ -112,12 +118,61 @@ public class ImageCache {
 
     private static class CacheDef {
         private final ImageCacheDefinition def;
-        private final LRUCache<Integer, Image> cache;
+        private final LRUCache<Integer, ImageCacheItem> cache;
 
-        public CacheDef(ImageCacheDefinition cacheDefinitions, LRUCache<Integer, Image> cache) {
+        public CacheDef(ImageCacheDefinition cacheDefinitions, LRUCache<Integer, ImageCacheItem> cache) {
             this.def = cacheDefinitions;
             this.cache = cache;
         }
+    }
+
+    private interface ImageCacheItem {
+        Image get();
+    }
+
+    /**
+     * For smaller indexing images we will store the Image directly in memory
+     * as the full screen image texture is not so large memory wise. SSee {@link FullScreenCache}
+     * for a better explanation
+     */
+    private static class IndexImageCache implements ImageCacheItem {
+        private Image image;
+
+        public IndexImageCache(Image image) {
+            this.image = image;
+        }
+
+        public Image get() {
+            return image;
+        }
+    }
+
+    /**
+     * Large full screen images may use a significant amount of RAM.
+     * For example, an iPhone image in full res will use about 90mb.
+     * For the full screen image cache we will store the bytes (about 5mb)
+     * and only load it to a Image texture (90 mb) when it is needed.
+     */
+    private static class FullScreenCache implements ImageCacheItem {
+        private final byte[] bytes;
+        private WeakReference<Image> image = new WeakReference<>(null);
+
+        public FullScreenCache(byte[] bytes) {
+            this.bytes = bytes;
+        }
+
+        public Image get() {
+            Image ret = image.get();
+            if (ret == null) {
+                ret = new Image(new ByteArrayInputStream(bytes));
+                image = new WeakReference<>(ret);
+            }
+            if (ret.isError()) {
+                LOG.error("Failed to load full screen image: {}", ret.exceptionProperty().get());
+            }
+            return ret;
+        }
+
     }
 
 }

@@ -3,11 +3,11 @@ package com.onebyte_llc.imageviewer.backend;
 import com.onebyte_llc.imageviewer.backend.cache.ImageCache;
 import com.onebyte_llc.imageviewer.backend.cache.ImageCacheDefinition;
 import com.onebyte_llc.imageviewer.backend.cache.ImageIndexer;
-import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
-import com.onebyte_llc.imageviewer.backend.image.JpegImageTypeDefinition;
 import com.onebyte_llc.imageviewer.backend.cache.PriorityThreadPool;
 import com.onebyte_llc.imageviewer.backend.db.Database;
 import com.onebyte_llc.imageviewer.backend.explorer.ImageExplorer;
+import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
+import com.onebyte_llc.imageviewer.backend.image.JpegImageTypeDefinition;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
 
