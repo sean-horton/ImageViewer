@@ -109,9 +109,9 @@ public class ImageIndexer {
                 }
 
                 // write indexed images to disk
-                // TODO - maybe we can improve performance by scaling the largest definition
-                //   then scaling that image to the next largest, and so on, that way we
-                //   aren't always scaling the full size image, we are incrementally downscaling
+                // NOTE: This loop works backwards and requires sorted definitions from the largest definition
+                // then scaling that image to the next largest, and so on, that way we
+                // aren't always scaling the full size image, we are incrementally downscaling
                 for (ImageCacheDefinition cacheDefinition : definitions) {
                     String name = cacheDefinition.getFileName(record.getId() + "");
                     Path path = cachePath.resolve(name);
@@ -126,7 +126,9 @@ public class ImageIndexer {
                         data = loader.readFromDisk();
                     }
 
-                    indexImage(record, data, cacheDefinition);
+                    // replace the larger image data with the new scaled image
+                    // so the next down scale is using the previous downscale
+                    data = indexImage(record, data, cacheDefinition);
                 }
 
                 if (data != null) {
@@ -150,7 +152,7 @@ public class ImageIndexer {
         });
     }
 
-    private void indexImage(ImageRecord record, ImageData data,
+    private ImageData indexImage(ImageRecord record, ImageData data,
                             ImageCacheDefinition cacheDefinition) throws IOException {
 
         LOG.debug("Indexing image {}", record.getId());
@@ -181,6 +183,7 @@ public class ImageIndexer {
         String name = cacheDefinition.getFileName(record.getId() + "");
         File indexImg = new File(cachePath.resolve(name).toString());
         ImageIO.write(resizedImage, "jpg", indexImg);
+        return data.cloneWithNewImage(resizedImage);
     }
 
 }

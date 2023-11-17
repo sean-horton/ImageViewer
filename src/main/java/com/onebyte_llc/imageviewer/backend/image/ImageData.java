@@ -7,8 +7,10 @@ public class ImageData {
 
     private final BufferedImage image;
     private final LocalDateTime originalDate;
+    private final Builder builder;
 
-    public ImageData(Builder builder) {
+    private ImageData(Builder builder) {
+        this.builder = builder;
         this.image = builder.getImage();
         this.originalDate = builder.getOriginalDate();
     }
@@ -19,6 +21,10 @@ public class ImageData {
 
     public LocalDateTime getOriginalDate() {
         return originalDate;
+    }
+
+    public ImageData cloneWithNewImage(BufferedImage bufferedImage) {
+        return builder.setImage(bufferedImage).build();
     }
 
     public static class Builder {
