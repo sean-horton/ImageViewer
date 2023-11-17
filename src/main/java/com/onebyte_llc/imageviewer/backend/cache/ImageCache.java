@@ -169,6 +169,7 @@ public class ImageCache {
             }
             if (ret.isError()) {
                 LOG.error("Failed to load full screen image: {}", ret.exceptionProperty().get());
+                return null;
             }
             return ret;
         }
