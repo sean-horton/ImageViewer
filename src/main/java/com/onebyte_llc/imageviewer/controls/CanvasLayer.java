@@ -56,6 +56,9 @@ public abstract class CanvasLayer {
     protected void onDetached() {
     }
 
+    protected void onAttach() {
+    }
+
 
     //////////////////////////////
     // User Action (to override)

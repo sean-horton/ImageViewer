@@ -25,7 +25,7 @@ public class Single<T> {
     public Observable<T> observe() {
         return new Observable<>((subscription) -> {
             executor.run(() -> {
-                if (subscriptions.size() == 0) {
+                if (subscriptions.size() == 0 && onSubscribeEmitter != null) {
                     onSubscribeEmitter.onSubscribe(Single.this);
                 }
                 subscriptions.add(subscription);

@@ -2,7 +2,6 @@ package com.onebyte_llc.imageviewer.backend;
 
 import com.onebyte_llc.imageviewer.backend.cache.ImageCache;
 import com.onebyte_llc.imageviewer.backend.cache.ImageIndexer;
-import com.onebyte_llc.imageviewer.backend.cache.PriorityThreadPool;
 import com.onebyte_llc.imageviewer.backend.db.Database;
 import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.CollectionPathRecord;
 import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.CollectionRecord;
@@ -11,6 +10,7 @@ import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebyte_llc.imageviewer.backend.explorer.ImageEvent;
 import com.onebyte_llc.imageviewer.backend.explorer.ImageExplorer;
 import com.onebyte_llc.imageviewer.backend.image.ImageLoader;
+import com.onebyte_llc.imageviewer.collections.pool.Priority;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Executor;
 import com.onebyte_llc.imageviewer.reactive.Observable;
@@ -231,7 +231,7 @@ public class CollectionService {
             ImageRecord knownImage = iter.next();
             if (!newImageFile.contains(knownImage.getFilename())) {
                 LOG.info("remove file: {}", knownImage.getFilename());
-                indexer.asyncRemoveIndex(PriorityThreadPool.Priority.LOW, knownImage);
+                indexer.asyncRemoveIndex(Priority.LOW, knownImage);
                 iter.remove();
             }
         }
@@ -249,7 +249,7 @@ public class CollectionService {
                 LOG.info("add file: {}", newImage.getPath().getFileName());
                 ImageRecord record = database.addImage(directoryRecord, newImage);
                 knownImages.add(record);
-                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, record, newImage);
+                indexer.asyncIndex(Priority.MEDIUM, record, newImage);
             } else if (im.getFsModifyTime() == null) {
                 FileTime fileLastModified = Files.getLastModifiedTime(newImage.getPath());
                 LocalDateTime fileTime = LocalDateTime.ofInstant(fileLastModified.toInstant(), ZoneId.systemDefault());
@@ -261,7 +261,7 @@ public class CollectionService {
 
                 // REINDEX
                 LOG.info("reindex file: {}", newImage.getPath().getFileName());
-                indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, im, newImage);
+                indexer.asyncIndex(Priority.MEDIUM, im, newImage);
             }
         }
 
@@ -281,7 +281,7 @@ public class CollectionService {
                 .map(m -> {
                     LOG.debug("Adding file: {}", m.getPath());
                     ImageRecord record = database.addImage(directoryRecord, m);
-                    indexer.asyncIndex(PriorityThreadPool.Priority.MEDIUM, record, m);
+                    indexer.asyncIndex(Priority.MEDIUM, record, m);
                     return new ImageHandle(imageCache, dir, record);
                 })
                 .toList();
@@ -308,7 +308,7 @@ public class CollectionService {
         for (ImageLoader r : removedImages) {
             for (ImageRecord record : knownImages) {
                 if (r.getPath().getFileName().toString().equals(record.getFilename())) {
-                    indexer.asyncRemoveIndex(PriorityThreadPool.Priority.LOW, record);
+                    indexer.asyncRemoveIndex(Priority.LOW, record);
                     removed.add(new ImageHandle(imageCache, Path.of(directoryRecord.getPath()), record));
                     break;
                 }

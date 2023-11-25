@@ -3,12 +3,12 @@ package com.onebyte_llc.imageviewer.backend;
 import com.onebyte_llc.imageviewer.backend.cache.ImageCache;
 import com.onebyte_llc.imageviewer.backend.cache.ImageCacheDefinition;
 import com.onebyte_llc.imageviewer.backend.cache.ImageIndexer;
-import com.onebyte_llc.imageviewer.backend.cache.PriorityThreadPool;
 import com.onebyte_llc.imageviewer.backend.db.Database;
 import com.onebyte_llc.imageviewer.backend.explorer.ImageExplorer;
 import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
 import com.onebyte_llc.imageviewer.backend.image.JpegImageTypeDefinition;
 import com.onebyte_llc.imageviewer.backend.image.PngImageTypeDefinition;
+import com.onebyte_llc.imageviewer.collections.pool.PriorityThreadPool;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
 
@@ -46,10 +46,10 @@ public final class Context {
         // ui state
         this.displayState = new DisplayState();
 
-        // size definitions (indexer and cache share sizes, but cache also has full size)
+        // size definitions (indexer and cache share sizes, but cache also has full size) - 265mb of textures
         ImageCacheDefinition cacheSmall = new ImageCacheDefinition(64, 64, 4000);
         ImageCacheDefinition cacheMedium = new ImageCacheDefinition(500, 500, 200);
-        ImageCacheDefinition cacheFull = new ImageCacheDefinition(Integer.MAX_VALUE, Integer.MAX_VALUE, 5);
+//        ImageCacheDefinition cacheFull = new ImageCacheDefinition(Integer.MAX_VALUE, Integer.MAX_VALUE, 5);
 
         // Streamable for notifying cache has updated
         Streamable<Boolean> refreshRequest = new Streamable<>();
@@ -65,7 +65,7 @@ public final class Context {
         List<ImageCacheDefinition> cacheDef = new ArrayList<>(3);
         cacheDef.add(cacheSmall);
         cacheDef.add(cacheMedium);
-        cacheDef.add(cacheFull);
+//        cacheDef.add(cacheFull);
         this.imageCache = new ImageCache(cacheDef, indexer, parameters.getImageCacheDir(), refreshRequest, threadPool);
         indexer.setImageCache(imageCache); // TODO - this is a code smell of looping dependencies, ImageIndexer <-> ImageCache
 

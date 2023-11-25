@@ -125,6 +125,7 @@ public class ImageGridCanvasController {
 
         List<CanvasLayer> oldLayers = new ArrayList<>();
         oldLayers.add(gridLayer);
+        oldLayers.add(scrollBarLayer);
 
         canvasView.playTransition(new TransitionZoomExpand(itemBounds, oldLayers, newLayers), TimeUnit.MILLISECONDS, 250); // imageLayer
         imageLayer.imagePropertyProperty().set(item);
@@ -144,6 +145,8 @@ public class ImageGridCanvasController {
         canvasView.detach(leftRightControlLayer);
 
         canvasView.attach(gridLayer);
+        canvasView.attach(scrollBarLayer);
+
         canvasView.invalidate();
         viewingImage = null;
     }

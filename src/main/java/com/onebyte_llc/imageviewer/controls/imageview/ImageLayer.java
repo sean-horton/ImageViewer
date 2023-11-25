@@ -29,17 +29,22 @@ public class ImageLayer extends CanvasLayer {
     private double startDragOffsetX;
     private double startDragOffsetY;
 
-    // This keeps an image reference to the drawing image
-    // in case an underlying weak reference is used in cache
-    private Image mostRecentImageHandle;
-
-
     public ImageLayer() {
         imageProperty.addListener((observable, oldValue, newValue) -> {
             // when the image changes, zoom back to regular full screen
             offsetX.setValue(0);
             offsetY.setValue(0);
             zoomScale.setValue(1);
+
+            // lock original image texture and release previous one
+            if (oldValue != null) {
+                oldValue.releaseOriginalImage();
+            }
+            if (newValue != null) {
+                newValue.obtainOriginalImage();
+            }
+
+            // and redraw
             invalidate();
         });
         zoomScale.addListener((observable, oldValue, newValue) -> draw());
@@ -59,10 +64,6 @@ public class ImageLayer extends CanvasLayer {
         return new double[]{w * zoomScale.get(), h * zoomScale.get()};
     }
 
-    @Override
-    protected void onDetached() {
-        mostRecentImageHandle = null;
-    }
 
     /////////////////////
     // Properties
@@ -166,7 +167,7 @@ public class ImageLayer extends CanvasLayer {
         if (handle == null) {
             return;
         }
-        Image image = handle.getImage(getW(), getH());
+        Image image = handle.obtainOriginalImage();
 
         // get draw image size
         double[] size = drawSize(image);
@@ -203,12 +204,10 @@ public class ImageLayer extends CanvasLayer {
             return;
         }
 
-        Image image = handle.getImage(getW(), getH());
+        Image image = handle.obtainOriginalImage();
         if (image == null) {
             return;
         }
-
-        mostRecentImageHandle = image;
 
         // resize
         double w = image.getWidth();

@@ -95,6 +95,7 @@ public class CanvasView extends AnchorPane {
 
         layer.attach(this);
         layers.add(layer);
+        layer.onAttach();
         invalidate();
     }
 

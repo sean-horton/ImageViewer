@@ -7,6 +7,8 @@ import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebyte_llc.imageviewer.backend.image.ImageData;
 import com.onebyte_llc.imageviewer.backend.image.ImageLoader;
 import com.onebyte_llc.imageviewer.backend.image.ImageTypeDefinition;
+import com.onebyte_llc.imageviewer.collections.pool.Priority;
+import com.onebyte_llc.imageviewer.collections.pool.PriorityThreadPool;
 import com.onebyte_llc.imageviewer.logger.Logger;
 import com.onebyte_llc.imageviewer.reactive.Streamable;
 
@@ -62,7 +64,7 @@ public class ImageIndexer {
         this.imageCache = imageCache;
     }
 
-    public void asyncRemoveIndex(PriorityThreadPool.Priority priority, ImageRecord record) {
+    public void asyncRemoveIndex(Priority priority, ImageRecord record) {
         threadPool.offer(priority, () -> {
             for (ImageCacheDefinition cacheDefinition : definitions) {
                 String name = cacheDefinition.getFileName(record.getId() + "");
@@ -75,10 +77,11 @@ public class ImageIndexer {
                 }
                 database.deleteImageById(record.getId());
             }
+            return true;
         });
     }
 
-    public void asyncIndex(PriorityThreadPool.Priority priority, Path srcDir, ImageRecord record) {
+    public void asyncIndex(Priority priority, Path srcDir, ImageRecord record) {
         for (ImageTypeDefinition loader : imageLoaders) {
             if (loader.isLoadable(record.getFilename())) {
                 asyncIndex(priority, record, loader.createLoader(srcDir.resolve(record.getFilename())));
@@ -87,10 +90,10 @@ public class ImageIndexer {
         }
     }
 
-    public void asyncIndex(PriorityThreadPool.Priority priority, ImageRecord imageRecord, ImageLoader loader) {
+    public void asyncIndex(Priority priority, ImageRecord imageRecord, ImageLoader loader) {
         threadPool.offer(priority, () -> {
             if (!fetchLock.lock(imageRecord.getId())) {
-                return;
+                return true;
             }
 
             try {
@@ -151,6 +154,7 @@ public class ImageIndexer {
             } finally {
                 fetchLock.unlock(imageRecord.getId());
             }
+            return true;
         });
     }
 
