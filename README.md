@@ -2,11 +2,12 @@
 
 ### Cross Platform Image Viewer
 
-An open source image viewer. Create local image collections
+An open source image viewer written in JavaFX. Create local image collections
 for recursively looking through directories on your local system.
-Images are indexed and sorted based on jpeg exif date. The original
-use case was to explore images on a hard disk that were in the
-following directory structure.
+Images are indexed and sorted based on jpeg exif date. It's probably best 
+to add directories with shallow depth. Currently it will recursively search
+with a hardcoded depth of 10. The original use case was to explore images on
+a hard disk that were in the following directory structure. 
 
 - root
   - 2011 
