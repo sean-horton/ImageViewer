@@ -63,3 +63,6 @@ It should work on macOS, Windows, and Linux.
 ```
 ./gradlew jpackageImage
 ```
+
+### License
+This software is licensed under GPLv2
