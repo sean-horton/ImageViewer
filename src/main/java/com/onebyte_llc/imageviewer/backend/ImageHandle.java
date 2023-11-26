@@ -4,7 +4,6 @@ import com.onebyte_llc.imageviewer.backend.cache.ImageCache;
 import com.onebyte_llc.imageviewer.backend.db.jooq.tables.records.ImageRecord;
 import com.onebyte_llc.imageviewer.collections.pool.ScheduledTask;
 import com.onebyte_llc.imageviewer.reactive.Executor;
-import com.onebyte_llc.imageviewer.reactive.Subscription;
 import javafx.scene.image.Image;
 
 import java.lang.ref.WeakReference;
@@ -27,7 +26,6 @@ public class ImageHandle {
 
     // original image reference holding
     private boolean obtainOriginal;
-    private Subscription originalImageSub;
     private ScheduledTask<Image> originalImageTask;
     private Image originalImage;
 
@@ -69,7 +67,7 @@ public class ImageHandle {
         }
 
         originalImageTask = cache.asyncLoadSourceImage(directory, imageRecord);
-        originalImageSub = originalImageTask.observe()
+        originalImageTask.observe()
                 .observeOn(Executor.fxApplicationThread())
                 .subscribe(image -> {
                     if (!obtainOriginal) {
