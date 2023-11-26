@@ -9,11 +9,22 @@ use case was to explore images on a hard disk that were in the
 following directory structure.
 
 - root
-    - 2011-03-28
-    - 2020-06-13
+  - 2011 
+    - 2011-03-28 
+  - 2020
+    - 2020-shoot1
+      - 2020-06-13
+      - 2020-06-14
+    - 2020-shoot2
+      - 2020-07-01
+      - 2020-07-02
+  - 2021
     - 2021-09-16
  
-<img src="src/main/resources/image/branding/app-icon.png" alt="drawing" width="200"/>
+<img src="example_screenshot.jpg" alt="drawing" width="800"/>
+<p>
+    <em>An example screenshot of the application displaying the Flickr2k dataset</em>
+</p>
 
 ### Performance
 
@@ -29,7 +40,7 @@ large enough to hold all on screen images, which can be up to
 
 ### Image Formats
 
-Currently only jpeg images are supported. To add other image
+Currently only jpeg and png images are supported. To add other image
 formats a `ImageLoader` and `TypeDefinition` need
 to be added in `com.onebyte_llc.imageviewer.backend.image`.
 Then the new `ImageLoader`  needs to be registered in the
