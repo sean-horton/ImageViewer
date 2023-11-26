@@ -2,7 +2,6 @@ module com.onebyte_llc.imageviewer {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
-    requires org.controlsfx.controls;
     requires org.xerial.sqlitejdbc;
     requires org.jooq;
     requires org.apache.commons.imaging;
