@@ -213,6 +213,8 @@ public class CollectionService {
                 return -1;
             } else if (o2.getImOriginalDate() == null) {
                 return 1;
+            } else if (o1.getImOriginalDate().equals(o2.getImOriginalDate())) {
+                return o1.getFileName().compareTo(o2.getFileName());
             }
             return o1.getImOriginalDate().compareTo(o2.getImOriginalDate());
         });
