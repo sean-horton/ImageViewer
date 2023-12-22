@@ -20,13 +20,28 @@ package com.onebyte_llc.imageviewer.ui;
 
 import com.onebyte_llc.imageviewer.MainApplication;
 import com.onebyte_llc.imageviewer.ViewNode;
+import com.onebyte_llc.imageviewer.backend.Context;
+import com.onebyte_llc.imageviewer.backend.DisplayState;
+import com.onebyte_llc.imageviewer.ui.directory.DirectoryViewController;
+import com.onebyte_llc.imageviewer.ui.display.DisplayViewController;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
 public class MainController {
 
+    @FXML
+    private BorderPane mainBorderPane;
+
+    private SplitPane splitPane;
+    private ViewNode<Parent, DirectoryViewController> directoryNode;
+    private ViewNode<Parent, DisplayViewController> displayNode;
+
+    private double dividerPosition = 0.25;
 
     public static ViewNode<Parent, MainController> create() {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class
@@ -35,6 +50,30 @@ public class MainController {
             return new ViewNode<>(fxmlLoader.load(), fxmlLoader.getController());
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load MainController", e);
+        }
+    }
+
+    @FXML
+    private void initialize() {
+        splitPane = new SplitPane();
+        directoryNode = DirectoryViewController.create();
+        displayNode = DisplayViewController.create();
+
+        DisplayState state = Context.getInstance().getDisplayState();
+        state.isSlideshowProperty().addListener((observable, oldValue, newValue) -> configureSlideshow(newValue));
+        configureSlideshow(false);
+    }
+
+    private void configureSlideshow(boolean isSlideshow) {
+        if (isSlideshow) {
+            dividerPosition = splitPane.getDividerPositions()[0];
+            splitPane.getItems().clear();
+            mainBorderPane.setCenter(displayNode.getNode());
+        } else {
+            mainBorderPane.setCenter(splitPane);
+            splitPane.getItems().add(directoryNode.getNode());
+            splitPane.getItems().add(displayNode.getNode());
+            splitPane.setDividerPosition(0, dividerPosition);
         }
     }
 

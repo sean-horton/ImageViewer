@@ -18,14 +18,19 @@
 
 package com.onebyte_llc.imageviewer.ui.display;
 
+import com.onebyte_llc.imageviewer.MainApplication;
 import com.onebyte_llc.imageviewer.ViewNode;
 import com.onebyte_llc.imageviewer.backend.Context;
 import com.onebyte_llc.imageviewer.backend.DisplayState;
 import com.onebyte_llc.imageviewer.ui.display.header.HeaderMode0ViewController;
 import com.onebyte_llc.imageviewer.ui.display.header.HeaderMode1ViewController;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.layout.VBox;
+
+import java.io.IOException;
 
 public class DisplayViewController {
 
@@ -34,6 +39,16 @@ public class DisplayViewController {
 
     private ViewNode<Node, HeaderMode0ViewController> mode0;
     private ViewNode<Node, HeaderMode1ViewController> mode1;
+
+    public static ViewNode<Parent, DisplayViewController> create() {
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class
+                .getResource("/layout/display/display-view.fxml"));
+        try {
+            return new ViewNode<>(fxmlLoader.load(), fxmlLoader.getController());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load DisplayViewController", e);
+        }
+    }
 
     @FXML
     private void initialize() {
