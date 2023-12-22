@@ -33,6 +33,7 @@ public class I18N {
     private static final Logger LOG = Logger.getInstance(I18N.class);
     private static final List<WeakReference<StringBinding>> BINDINGS = new LinkedList<>();
     private static ResourceBundle BUNDLE = ResourceBundle.getBundle("i18n.en");
+    private static Locale sLocale;
 
     public static void setLocale(Locale locale) {
         try {
@@ -41,6 +42,7 @@ public class I18N {
             LOG.warn("No localization found for: {0}. Using previous.", locale.getLanguage());
         }
 
+        sLocale = locale;
         Iterator<WeakReference<StringBinding>> iter = BINDINGS.iterator();
         while (iter.hasNext()) {
             WeakReference<StringBinding> next = iter.next();
@@ -50,6 +52,10 @@ public class I18N {
                 next.get().invalidate();
             }
         }
+    }
+
+    public static Locale getLocale() {
+        return sLocale;
     }
 
     public static StringBinding get(String key, Object... args) {

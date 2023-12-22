@@ -25,6 +25,7 @@ import com.onebyte_llc.imageviewer.backend.DisplayState;
 import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.controls.CanvasLayer;
 import com.onebyte_llc.imageviewer.controls.CanvasView;
+import com.onebyte_llc.imageviewer.controls.LabelLayer;
 import com.onebyte_llc.imageviewer.controls.LeftRightControlsLayer;
 import com.onebyte_llc.imageviewer.controls.TransitionZoomExpand;
 import com.onebyte_llc.imageviewer.controls.gridview.GridLayer;
@@ -61,6 +62,7 @@ public class ImageGridCanvasController {
     private GridLayer<ImageHandle> gridLayer = new GridLayer<>();
     private ScrollBarLayer scrollBarLayer = new ScrollBarLayer();
     private ImageLayer imageLayer = new ImageLayer();
+    private LabelLayer slideshowLabelLayer = new LabelLayer();
     private LeftRightControlsLayer leftRightControlLayer = new LeftRightControlsLayer();
 
 
@@ -139,6 +141,7 @@ public class ImageGridCanvasController {
                 leftRightControlLayer.setEnabled(newValue.doubleValue() == 1));
 
         // slideshow binding
+        slideshowLabelLayer.imageProperty().bind(state.fullScreenImageProperty());
         state.isSlideshowProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 playSlideshow();
@@ -263,6 +266,7 @@ public class ImageGridCanvasController {
             return; // It's possible we still have no image for a slideshow
         }
 
+        canvasView.attach(slideshowLabelLayer);
         slideshowNext();
     }
 
@@ -275,6 +279,7 @@ public class ImageGridCanvasController {
 
     private void stopSlideshow() {
         LOG.info("Slideshow stopping");
+        canvasView.detach(slideshowLabelLayer);
         if (nextSlideShowFuture != null) {
             nextSlideShowFuture.cancel(false);
             nextSlideShowFuture = null;
