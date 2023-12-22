@@ -51,6 +51,11 @@ public class DisplayViewController {
                 toolbarVbox.getChildren().add(mode1.getNode());
             }
         });
+
+        state.isSlideshowProperty().addListener((observable, oldValue, newValue) -> {
+            toolbarVbox.setManaged(!newValue);
+            toolbarVbox.setVisible(!newValue);
+        });
     }
 
 }

@@ -38,6 +38,7 @@ public class DisplayState {
 
     private final ObjectProperty<ImageRenderMode> imageRenderMode = new SimpleObjectProperty<>();
     private final ObjectProperty<ImageHandle> fullScreenImage = new SimpleObjectProperty<>();
+    private final ObjectProperty<Boolean> isSlideshow = new SimpleObjectProperty<>();
 
     public DisplayState() {
         gridBaseImageSize.setValue(50);
@@ -45,6 +46,7 @@ public class DisplayState {
         gridMaxScaleFactor.setValue(10);
         gridImageScaleFactor.setValue(1);
         imageRenderMode.setValue(ImageRenderMode.FIT);
+        isSlideshow.set(false);
     }
 
     public DoubleProperty gridBaseImageSizeProperty() {
@@ -81,5 +83,9 @@ public class DisplayState {
 
     public DoubleProperty fullScreeMaxScaleFactorProperty() {
         return fullScreeMaxScaleFactor;
+    }
+
+    public ObjectProperty<Boolean> isSlideshowProperty() {
+        return isSlideshow;
     }
 }

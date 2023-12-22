@@ -36,12 +36,14 @@ import com.onebyte_llc.imageviewer.reactive.Executor;
 import com.onebyte_llc.imageviewer.reactive.Subscription;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -66,10 +68,13 @@ public class ImageGridCanvasController {
     private Subscription collectionImageSub;
     private ImageHandle viewingImage;
     private ImageGridRenderer imageGridRenderer = new ImageGridRenderer();
+    private DisplayState state;
+
+    private ScheduledFuture<?> nextSlideShowFuture;
 
     @FXML
     private void initialize() {
-        DisplayState state = Context.getInstance().getDisplayState();
+        state = Context.getInstance().getDisplayState();
         CollectionService collectionService = Context.getInstance().getCollectionService();
 
         gridLayer.backgroundColorProperty().bind(Theme.imageBackground());
@@ -120,6 +125,7 @@ public class ImageGridCanvasController {
         Bindings.bindBidirectional(imageLayer.zoomScaleProperty(), state.fullScreenScaleFactorProperty());
         imageLayer.minZoomScaleProperty().bind(state.fullScreeMinScaleFactorProperty());
         imageLayer.maxZoomScaleProperty().bind(state.fullScreeMaxScaleFactorProperty());
+        imageLayer.slideshowProperty().bind(state.isSlideshowProperty());
 
         // keyboard press (example, move to next full screen image)
         canvasView.setOnKeyPressed(this::onKeyPress);
@@ -131,6 +137,15 @@ public class ImageGridCanvasController {
         leftRightControlLayer.setRightImage(new Image(getClass().getResource("/image/forward-button.png").toString()));
         state.fullScreenScaleFactorProperty().addListener((observable, oldValue, newValue) ->
                 leftRightControlLayer.setEnabled(newValue.doubleValue() == 1));
+
+        // slideshow binding
+        state.isSlideshowProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                playSlideshow();
+            } else {
+                stopSlideshow();
+            }
+        });
     }
 
     private void openFullScreenImage(ImageHandle item, Bounds itemBounds) {
@@ -187,11 +202,15 @@ public class ImageGridCanvasController {
         switch (event.getCode()) {
             case ESCAPE -> {
                 event.consume();
-                closeFullScreenImage();
+                if (state.isSlideshowProperty().get()) {
+                    state.isSlideshowProperty().set(false);
+                } else {
+                    closeFullScreenImage();
+                }
             }
             case SPACE -> {
                 event.consume();
-                // TODO - start sideshow
+                state.isSlideshowProperty().set(!state.isSlideshowProperty().get());
             }
             case RIGHT, UP -> { // next
                 event.consume();
@@ -229,6 +248,36 @@ public class ImageGridCanvasController {
                 }
                 break;
             }
+        }
+    }
+
+    ///////////////////////
+    // slideshow
+    private void playSlideshow() {
+        LOG.info("Slideshow starting");
+        if (viewingImage == null && !gridLayer.getItems().isEmpty()) {
+            // Open full screen image if not already
+            openFullScreenImage(gridLayer.getItems().get(0), new BoundingBox(0, 0, 0, 0));
+        }
+        if (viewingImage == null) {
+            return; // It's possible we still have no image for a slideshow
+        }
+
+        slideshowNext();
+    }
+
+    private void slideshowNext() {
+        nextSlideShowFuture = Executor.fxApplicationThread().run(() -> {
+            nextImage();
+            slideshowNext();
+        }, 3, TimeUnit.SECONDS);
+    }
+
+    private void stopSlideshow() {
+        LOG.info("Slideshow stopping");
+        if (nextSlideShowFuture != null) {
+            nextSlideShowFuture.cancel(false);
+            nextSlideShowFuture = null;
         }
     }
 
