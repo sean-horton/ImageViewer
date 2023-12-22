@@ -274,7 +274,7 @@ public class ImageGridCanvasController {
         nextSlideShowFuture = Executor.fxApplicationThread().run(() -> {
             nextImage();
             slideshowNext();
-        }, 3, TimeUnit.SECONDS);
+        }, state.slideshowDurationMsProperty().get(), TimeUnit.MILLISECONDS);
     }
 
     private void stopSlideshow() {

@@ -20,8 +20,10 @@ package com.onebyte_llc.imageviewer.backend;
 
 import com.onebyte_llc.imageviewer.controls.gridview.ImageRenderMode;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class DisplayState {
@@ -39,6 +41,7 @@ public class DisplayState {
     private final ObjectProperty<ImageRenderMode> imageRenderMode = new SimpleObjectProperty<>();
     private final ObjectProperty<ImageHandle> fullScreenImage = new SimpleObjectProperty<>();
     private final ObjectProperty<Boolean> isSlideshow = new SimpleObjectProperty<>();
+    private final LongProperty slideshowDurationMs = new SimpleLongProperty();
 
     public DisplayState() {
         gridBaseImageSize.setValue(50);
@@ -46,7 +49,8 @@ public class DisplayState {
         gridMaxScaleFactor.setValue(10);
         gridImageScaleFactor.setValue(1);
         imageRenderMode.setValue(ImageRenderMode.FIT);
-        isSlideshow.set(false);
+        isSlideshow.setValue(false);
+        slideshowDurationMs.setValue(4000);
     }
 
     public DoubleProperty gridBaseImageSizeProperty() {
@@ -87,5 +91,9 @@ public class DisplayState {
 
     public ObjectProperty<Boolean> isSlideshowProperty() {
         return isSlideshow;
+    }
+
+    public LongProperty slideshowDurationMsProperty() {
+        return slideshowDurationMs;
     }
 }

@@ -77,7 +77,7 @@ To run the java project on any operating system
 
 To build a native app image run the following on the target OS.
 It should work on macOS, Windows, and Linux. It will create
-a standalone executable. 
+a standalone executable.
 
 ```
 ./gradlew jpackageImage
@@ -86,6 +86,10 @@ a standalone executable.
 ### Future Plans
 
 - Support video formats (probably using VLC)
+- Support User configurations, examples,
+    - allow user to set depth of source image search on a folder
+    - allow user to set duration an image shows during a slideshow
+    - etc.
 - Support Filtering/sorting images by
     - image creation date
     - image modified date
