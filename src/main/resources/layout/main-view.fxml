@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.SplitPane?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            style="-fx-background-color: transparent"
+            styleClass="mainBackground"
+            fx:id="mainBorderPane"
             fx:controller="com.onebyte_llc.imageviewer.ui.MainController">
 
     <top>
@@ -13,10 +11,7 @@
     </top>
 
     <center>
-        <SplitPane dividerPositions="0.25">
-            <fx:include source="directory/directory-view.fxml"/>
-            <fx:include VBox.vgrow="ALWAYS" fx:id="displayView" source="display/display-view.fxml"/>
-        </SplitPane>
+
     </center>
 
     <bottom>

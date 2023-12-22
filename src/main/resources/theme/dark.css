@@ -1,5 +1,5 @@
 /* SPLIT PANE */
-.split-pane {
+.split-pane, .mainBackground {
     -fx-background-color: #212020;
 }
 

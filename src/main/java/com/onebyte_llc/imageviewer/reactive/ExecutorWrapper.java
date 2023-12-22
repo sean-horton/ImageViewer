@@ -16,25 +16,34 @@
  *     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package com.onebyte_llc.imageviewer.ui.directory;
+package com.onebyte_llc.imageviewer.reactive;
 
-import com.onebyte_llc.imageviewer.MainApplication;
-import com.onebyte_llc.imageviewer.ViewNode;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import java.io.IOException;
+public class ExecutorWrapper implements Executor {
 
-public class DirectoryViewController {
+    private Runner runner;
+    private ScheduledExecutorService scheduler;
 
-    public static ViewNode<Parent, DirectoryViewController> create() {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class
-                .getResource("/layout/directory/directory-view.fxml"));
-        try {
-            return new ViewNode<>(fxmlLoader.load(), fxmlLoader.getController());
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load DirectoryViewController", e);
-        }
+    public ExecutorWrapper(Runner runner, ScheduledExecutorService scheduler) {
+        this.runner = runner;
+        this.scheduler = scheduler;
+    }
+
+    @Override
+    public void run(Runnable runnable) {
+        runner.run(runnable);
+    }
+
+    @Override
+    public ScheduledFuture<?> run(Runnable runnable, long time, TimeUnit timeUnit) {
+        return scheduler.schedule(() -> runner.run(runnable), time, timeUnit);
+    }
+
+    public interface Runner {
+        void run(Runnable runnable);
     }
 
 }

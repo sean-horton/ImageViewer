@@ -20,8 +20,11 @@ package com.onebyte_llc.imageviewer.controls.imageview;
 
 import com.onebyte_llc.imageviewer.backend.ImageHandle;
 import com.onebyte_llc.imageviewer.controls.CanvasLayer;
+import javafx.animation.AnimationTimer;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.canvas.GraphicsContext;
@@ -29,6 +32,9 @@ import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class ImageLayer extends CanvasLayer {
 
@@ -41,11 +47,19 @@ public class ImageLayer extends CanvasLayer {
     private final DoubleProperty maxZoomScale = new SimpleDoubleProperty(5);
     private final DoubleProperty offsetX = new SimpleDoubleProperty();
     private final DoubleProperty offsetY = new SimpleDoubleProperty();
+    private final BooleanProperty slideshow = new SimpleBooleanProperty();
 
     // drag event state
     private MouseEvent startDragEvent;
     private double startDragOffsetX;
     private double startDragOffsetY;
+
+    // slideshow
+    private AnimationTimer slideshowAnimation;
+    private ImageHandle slideshowPrevImage;
+    private double slideshowAnimOffsetX;
+    private double slideshowAnimOffsetY;
+    private long slideshowNextFrameTime;
 
     public ImageLayer() {
         imageProperty.addListener((observable, oldValue, newValue) -> {
@@ -66,6 +80,57 @@ public class ImageLayer extends CanvasLayer {
             invalidate();
         });
         zoomScale.addListener((observable, oldValue, newValue) -> draw());
+
+        slideshowProperty().addListener((observable, oldValue, newValue) -> animateSlideshow(newValue));
+    }
+
+    private void animateSlideshow(boolean enable) {
+        if (enable) {
+            if (slideshowAnimation != null) {
+                return; // already running
+            }
+            slideshowAnimation = new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    if (now < slideshowNextFrameTime) {
+                        return;
+                    }
+
+                    if (slideshowPrevImage != imagePropertyProperty().get()) {
+                        slideshowPrevImage = imageProperty.get();
+
+                        Random r = new Random();
+                        int low = -30;
+                        int high = 30;
+                        slideshowAnimOffsetX = r.nextInt(high - low) + low;
+                        slideshowAnimOffsetY = r.nextInt(high - low) + low;
+
+                        // TODO - set startPos, targetPos, and the time it has to perform the animation
+                        zoomScale.setValue(1.1);
+                        offsetX.setValue(slideshowAnimOffsetX);
+                        offsetX.setValue(slideshowAnimOffsetY);
+                    }
+
+                    // TODO - animation could be improved, this is all random offsets and doesn't take into account
+                    //   centering and being able to see the entire image
+                    double move = 0.025;
+                    offsetX.setValue(offsetX.get() + (slideshowAnimOffsetX > 0 ? move : -move));
+                    offsetY.setValue(offsetY.get() + (slideshowAnimOffsetY > 0 ? move : -move));
+                    invalidate();
+                    slideshowNextFrameTime = now + TimeUnit.MILLISECONDS.toNanos(33);
+                }
+            };
+            slideshowAnimation.start();
+        } else {
+            if (slideshowAnimation != null) {
+                slideshowAnimation.stop();
+                slideshowAnimation = null;
+            }
+            offsetY.setValue(0);
+            offsetX.setValue(0);
+            zoomScale.setValue(0);
+            slideshowPrevImage = null;
+        }
     }
 
     private double[] drawSize(Image image) {
@@ -101,6 +166,9 @@ public class ImageLayer extends CanvasLayer {
         return zoomScale;
     }
 
+    public BooleanProperty slideshowProperty() {
+        return slideshow;
+    }
 
     /////////////////////
     // pinch to zoom
