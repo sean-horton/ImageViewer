@@ -128,7 +128,7 @@ public class ImageLayer extends CanvasLayer {
             }
             offsetY.setValue(0);
             offsetX.setValue(0);
-            zoomScale.setValue(0);
+            zoomScale.setValue(minZoomScale.getValue());
             slideshowPrevImage = null;
         }
     }
