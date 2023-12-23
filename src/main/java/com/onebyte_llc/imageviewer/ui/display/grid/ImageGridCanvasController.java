@@ -217,10 +217,12 @@ public class ImageGridCanvasController {
             }
             case RIGHT, UP -> { // next
                 event.consume();
+                resetSlideshowTimer();
                 nextImage();
             }
             case LEFT, DOWN -> { // prev
                 event.consume();
+                resetSlideshowTimer();
                 prevImage();
             }
         }
@@ -267,6 +269,15 @@ public class ImageGridCanvasController {
         }
 
         canvasView.attach(slideshowLabelLayer);
+        slideshowNext();
+    }
+
+    private void resetSlideshowTimer() {
+        if (nextSlideShowFuture == null) {
+            return;
+        }
+
+        nextSlideShowFuture.cancel(false);
         slideshowNext();
     }
 
