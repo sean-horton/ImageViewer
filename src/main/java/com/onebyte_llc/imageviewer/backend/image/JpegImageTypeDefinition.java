@@ -33,7 +33,7 @@ public class JpegImageTypeDefinition implements ImageTypeDefinition {
 
     @Override
     public boolean isLoadable(String name) {
-        return name.endsWith(".jpg") || name.endsWith(".jpeg");
+        return name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg");
     }
 
 }
