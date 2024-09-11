@@ -58,6 +58,7 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.43.2.1")
     implementation("org.jooq:jooq:3.18.7")
     implementation("org.apache.commons:commons-imaging:1.0-alpha3")
+    implementation("net.java.dev.jna:jna:5.14.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")

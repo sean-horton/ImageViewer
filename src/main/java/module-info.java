@@ -6,6 +6,7 @@ module com.onebyte_llc.imageviewer {
     requires org.jooq;
     requires org.apache.commons.imaging;
     requires java.desktop;
+    requires com.sun.jna;
 
     opens com.onebyte_llc.imageviewer to javafx.fxml;
     exports com.onebyte_llc.imageviewer;
@@ -33,4 +34,8 @@ module com.onebyte_llc.imageviewer {
     opens com.onebyte_llc.imageviewer.controls.imageview to javafx.fxml;
     exports com.onebyte_llc.imageviewer.controls.scrollbar;
     opens com.onebyte_llc.imageviewer.controls.scrollbar to javafx.fxml;
+
+    exports com.onebyte_llc.imageviewer.vlc to com.sun.jna;
+    exports com.onebyte_llc.imageviewer.vlc.video to com.sun.jna;
+    exports com.onebyte_llc.imageviewer.vlc.track to com.sun.jna;
 }
